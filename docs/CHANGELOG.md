@@ -4,6 +4,65 @@
 
 ---
 
+## 2026-11-02 – FLOW 9: NOTIFICATION CENTER (COMPLETED)
+
+### Task
+Triển khai Flow 9 – Trung tâm Thông báo Đơn hàng, Quản lý Trạng thái Đã đọc & Sẵn sàng Push FCM (Notification Center Module)
+
+### Overview
+- Thiết kế và triển khai thực thể JPA & Enums:
+  - `NotificationType`: Enum (`ORDER_STATUS`, `DISPUTE_UPDATE`, `PAYMENT_UPDATE`, `SYSTEM`).
+  - `NotificationEntity`: Bảng `notifications` (lưu trữ `user_id`, `title`, `body`, `type`, `is_read`, `data_payload`, `created_at`, có index trên `user_id` và `created_at`).
+- Triển khai Repository Abstraction:
+  - Pure Domain Interface: `NotificationRepository`.
+  - Spring Data JPA: `NotificationJpaRepository`.
+  - Implementation: `MySqlNotificationRepository` (`@Primary`).
+- Xây dựng DTOs & Mappers:
+  - `NotificationResponse`.
+  - `UnreadNotificationCountResponse`.
+  - `NotificationMapper`.
+- Xây dựng Business Services (`NotificationService` & `NotificationServiceImpl`):
+  - `BR-NOTI-01`: Quyền sở hữu thông báo - Sinh viên chỉ có quyền xem và đánh dấu đã đọc các thông báo của chính mình (`user_id == currentUserId`). Bất kỳ truy cập trái phép nào đều bị từ chối với `ACCESS_DENIED` (HTTP 403).
+  - `BR-NOTI-02`: Đổi trạng thái đã đọc - Cho phép đánh dấu đã đọc từng thông báo (`markAsRead`) hoặc đánh dấu tất cả thông báo của sinh viên (`markAllAsRead`).
+  - `BR-NOTI-02b`: Đếm nhanh thông báo chưa đọc (`getUnreadCount`) phục vụ hiển thị badge số lượng thông báo mới trên Flutter UI icon chuông.
+  - `BR-NOTI-03`: Tự động lưu thông báo theo sự kiện (`sendNotification`) và chuẩn bị sẵn kết nối Firebase Cloud Messaging (FCM).
+- Xây dựng Controllers (`NotificationController`):
+  - `GET /api/v1/notifications` (API-019): Lấy danh sách lịch sử thông báo của sinh viên (phân trang, sắp xếp theo `createdAt` DESC, HTTP 200 OK).
+  - `PATCH /api/v1/notifications/{id}/read` (API-020): Đánh dấu một thông báo là đã đọc (HTTP 200 OK).
+  - `PATCH /api/v1/notifications/read-all` (API-021): Đánh dấu toàn bộ thông báo của người dùng là đã đọc (HTTP 200 OK).
+  - `GET /api/v1/notifications/unread-count` (API-022): Đếm số lượng thông báo chưa đọc (HTTP 200 OK).
+- Viết Unit Tests & Integration Tests:
+  - `NotificationServiceTest`: 7 unit tests bao phủ toàn bộ các phương thức nghiệp vụ (lấy danh sách phân trang, đánh dấu đã đọc thành công, từ chối khi không tìm thấy, từ chối khi không phải chủ sở hữu, đánh dấu tất cả, đếm số chưa đọc, lưu thông báo mới).
+  - `NotificationControllerTest`: 4 integration tests kiểm tra toàn diện API-019, API-020, API-021, API-022 qua MockMvc.
+  - Toàn bộ test suite chạy thành công: **84/84 tests passed (100%)**.
+
+### Files Created
+- `org.example.order_app_backend.entity.NotificationType`
+- `org.example.order_app_backend.entity.NotificationEntity`
+- `org.example.order_app_backend.repository.NotificationRepository`
+- `org.example.order_app_backend.repository.mysql.jpa.NotificationJpaRepository`
+- `org.example.order_app_backend.repository.mysql.MySqlNotificationRepository`
+- `org.example.order_app_backend.dto.response.NotificationResponse`
+- `org.example.order_app_backend.dto.response.UnreadNotificationCountResponse`
+- `org.example.order_app_backend.mapper.NotificationMapper`
+- `org.example.order_app_backend.service.NotificationService`
+- `org.example.order_app_backend.service.impl.NotificationServiceImpl`
+- `org.example.order_app_backend.controller.NotificationController`
+- `src/test/java/org/example/order_app_backend/service/NotificationServiceTest.java`
+- `src/test/java/org/example/order_app_backend/controller/NotificationControllerTest.java`
+
+### Files Modified
+- `org.example.order_app_backend.exception.ErrorCode` (bổ sung `NOTIFICATION_NOT_FOUND`)
+- `docs/BUSINESS_RULES.md` (bổ sung Mục 6 - `BR-NOTI-01`, `BR-NOTI-02`, `BR-NOTI-03`)
+- `docs/API_CATALOG.md` (bổ sung đặc tả API-019, API-020, API-021, API-022)
+- `docs/REQUIREMENT_TRACEABILITY.md` (đánh dấu `REQ-NOTI-01` sang `DONE`)
+- `docs/PROJECT_CONTEXT.md` (cập nhật Flow 9 HOÀN THÀNH, 9 bảng active, 84/84 tests pass)
+
+### Verification
+- `mvn test` trong module `order_app_backend`: 84/84 tests passed (0 failures, 0 errors, 0 skipped).
+
+---
+
 ## 2026-11-02 – FLOW 8: REVIEW & RATING (COMPLETED)
 
 ### Task

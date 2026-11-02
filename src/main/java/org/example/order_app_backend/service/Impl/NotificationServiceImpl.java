@@ -32,7 +32,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<NotificationResponse> getMyNotifications(Pageable pageable) {
-        Long currentUserId = currentUserProvider.getCurrentUserId();
+        Long currentUserId = getCurrentUserIdOrThrow();
         log.info("Lấy danh sách thông báo của người dùng ID: {}", currentUserId);
 
         Page<NotificationEntity> page = notificationRepository.findByUserId(currentUserId, pageable);
@@ -54,7 +54,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public NotificationResponse markAsRead(Long notificationId) {
-        Long currentUserId = currentUserProvider.getCurrentUserId();
+        Long currentUserId = getCurrentUserIdOrThrow();
         log.info("Đánh dấu đã đọc thông báo ID: {} bởi người dùng ID: {}", notificationId, currentUserId);
 
         NotificationEntity notification = notificationRepository.findById(notificationId)
@@ -73,7 +73,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void markAllAsRead() {
-        Long currentUserId = currentUserProvider.getCurrentUserId();
+        Long currentUserId = getCurrentUserIdOrThrow();
         log.info("Đánh dấu tất cả thông báo là đã đọc cho người dùng ID: {}", currentUserId);
         notificationRepository.markAllAsReadByUserId(currentUserId);
     }
@@ -81,11 +81,19 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional(readOnly = true)
     public UnreadNotificationCountResponse getUnreadCount() {
-        Long currentUserId = currentUserProvider.getCurrentUserId();
+        Long currentUserId = getCurrentUserIdOrThrow();
         long unreadCount = notificationRepository.countByUserIdAndIsReadFalse(currentUserId);
         return UnreadNotificationCountResponse.builder()
                 .unreadCount(unreadCount)
                 .build();
+    }
+
+    private Long getCurrentUserIdOrThrow() {
+        Long currentUserId = currentUserProvider.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        return currentUserId;
     }
 
     @Override

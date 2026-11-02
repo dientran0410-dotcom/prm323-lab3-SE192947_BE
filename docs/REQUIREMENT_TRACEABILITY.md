@@ -23,7 +23,7 @@
 | **REQ-DISPUTE-01:** Báo cáo Sự cố & Khiếu nại | Sinh viên khiếu nại món hỏng/thiếu, bắt buộc có ảnh bằng chứng | S8 | `Dispute` | `POST /api/v1/disputes` | `disputes` | `DisputeServiceTest`<br/>`DisputeControllerTest` | `DONE` |
 | **REQ-DISPUTE-02:** Thẩm định & Lịch sử Hoàn tiền | Kiểm tra giới hạn số tiền hoàn, theo dõi tiến trình xử lý | S8b, S8c | `Dispute` | `GET /api/v1/disputes/{id}`<br/>`GET /api/v1/disputes` | `disputes` | `DisputeServiceTest`<br/>`DisputeControllerTest` | `DONE` |
 | **REQ-REVIEW-01:** Đánh giá Quán & Shipper | Chấm sao từ 1-5 và nhận xét sau khi đơn hàng hoàn tất | S9 | `Review` | `POST /api/v1/reviews`<br/>`GET /api/v1/stores/{storeId}/reviews` | `reviews`<br/>`stores` | `ReviewServiceTest`<br/>`ReviewControllerTest` | `DONE` |
-| **REQ-NOTI-01:** Thông báo Tiến trình | Lưu vết và cung cấp thông báo khi đơn hàng đổi trạng thái | S12 | `Notification` | `GET /api/v1/notifications` | `notifications` | `NotificationTest` | `BASELINE_READY` |
+| **REQ-NOTI-01:** Thông báo Tiến trình | Lưu vết và cung cấp thông báo khi đơn hàng đổi trạng thái | S12 | `Notification` | `GET /api/v1/notifications`<br/>`PATCH /api/v1/notifications/{id}/read`<br/>`GET /api/v1/notifications/unread-count` | `notifications` | `NotificationServiceTest`<br/>`NotificationControllerTest` | `DONE` |
 
 ---
 

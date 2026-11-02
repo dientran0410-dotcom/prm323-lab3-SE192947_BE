@@ -99,3 +99,21 @@
 - Sinh viên chỉ có quyền truy xuất thông tin chi tiết, lịch sử đơn hàng, lịch sử khiếu nại thuộc về chính tài khoản của mình (`user_id == currentUserId`).
 - Quản trị viên (`ADMIN`) có quyền xem toàn bộ dữ liệu. Chủ quán ăn (`STORE_OWNER`) chỉ có quyền xem đơn hàng của quán mình.
 - Bất kỳ hành vi truy cập trái phép đơn hàng của người khác đều bị chặn với mã lỗi `ACCESS_DENIED` (HTTP 403).
+
+---
+
+## 6. Phân hệ Thông báo Đơn hàng & Push FCM (Notification Business Rules - BR-NOTI)
+
+### BR-NOTI-01: Quyền Truy cập & Thao tác Thông báo
+- Sinh viên chỉ có quyền xem danh sách thông báo và cập nhật trạng thái đã đọc trên các thông báo thuộc về chính tài khoản của mình (`user_id == currentUserId`).
+- Bất kỳ hành vi đánh dấu đã đọc trên thông báo của người dùng khác đều bị chặn với mã lỗi `ACCESS_DENIED` (HTTP 403).
+
+### BR-NOTI-02: Cập nhật Trạng thái Đã đọc (Read Status)
+- Cho phép đánh dấu đã đọc cho từng thông báo cụ thể (`PATCH /api/v1/notifications/{id}/read`).
+- Cho phép đánh dấu đã đọc hàng loạt toàn bộ thông báo chưa đọc của sinh viên (`PATCH /api/v1/notifications/read-all`).
+- Cung cấp API đếm nhanh số lượng thông báo chưa đọc (`GET /api/v1/notifications/unread-count`) phục vụ hiển thị badge số đỏ trên icon chuông của ứng dụng Flutter.
+
+### BR-NOTI-03: Điều phối Thông báo Trạng thái (Event Dispatching)
+- Hỗ trợ gửi thông báo theo các phân loại chuẩn (`ORDER_STATUS`, `DISPUTE_UPDATE`, `PAYMENT_UPDATE`, `SYSTEM`) kèm dữ liệu nhúng JSON `dataPayload`.
+- Sẵn sàng kích hoạt Firebase Cloud Messaging (FCM) push notification khi tích hợp thiết bị di động.
+

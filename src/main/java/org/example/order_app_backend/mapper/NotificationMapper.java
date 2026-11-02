@@ -23,3 +23,4 @@ public class NotificationMapper {
                 .build();
     }
 }
+

@@ -43,3 +43,4 @@ public class MySqlNotificationRepository implements NotificationRepository {
         jpaRepository.markAllAsReadByUserId(userId);
     }
 }
+

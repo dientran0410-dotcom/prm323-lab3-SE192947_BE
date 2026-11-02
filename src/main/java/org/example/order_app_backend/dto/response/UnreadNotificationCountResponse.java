@@ -10,3 +10,4 @@ import lombok.*;
 public class UnreadNotificationCountResponse {
     private Long unreadCount;
 }
+

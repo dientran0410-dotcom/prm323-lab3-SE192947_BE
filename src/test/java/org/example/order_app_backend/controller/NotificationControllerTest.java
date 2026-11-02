@@ -51,7 +51,7 @@ class NotificationControllerTest {
         );
 
         testNotification = notificationRepository.save(NotificationEntity.builder()
-                .userId(1L) // Default Mocked CurrentUserProvider returns 1L
+                .userId(testUser.getId())
                 .title("Đơn hàng đã được xác nhận")
                 .body("Quán ăn đang tiến hành làm món ăn của bạn.")
                 .type(NotificationType.ORDER_STATUS)
@@ -63,7 +63,9 @@ class NotificationControllerTest {
     @Test
     @DisplayName("GET /api/v1/notifications: Lấy danh sách thông báo thành công (200 OK)")
     void getMyNotifications_Success() throws Exception {
-        mockMvc.perform(get("/api/v1/notifications"))
+        mockMvc.perform(get("/api/v1/notifications")
+                        .header("X-User-Id", testUser.getId())
+                        .header("X-Firebase-Uid", testUser.getFirebaseUid()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.content", not(empty())))
@@ -73,7 +75,9 @@ class NotificationControllerTest {
     @Test
     @DisplayName("PATCH /api/v1/notifications/{id}/read: Đánh dấu đã đọc thành công (200 OK)")
     void markAsRead_Success() throws Exception {
-        mockMvc.perform(patch("/api/v1/notifications/{id}/read", testNotification.getId()))
+        mockMvc.perform(patch("/api/v1/notifications/{id}/read", testNotification.getId())
+                        .header("X-User-Id", testUser.getId())
+                        .header("X-Firebase-Uid", testUser.getFirebaseUid()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.id", is(testNotification.getId().intValue())))
@@ -83,7 +87,9 @@ class NotificationControllerTest {
     @Test
     @DisplayName("PATCH /api/v1/notifications/read-all: Đánh dấu tất cả đã đọc thành công (200 OK)")
     void markAllAsRead_Success() throws Exception {
-        mockMvc.perform(patch("/api/v1/notifications/read-all"))
+        mockMvc.perform(patch("/api/v1/notifications/read-all")
+                        .header("X-User-Id", testUser.getId())
+                        .header("X-Firebase-Uid", testUser.getFirebaseUid()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.message", containsString("toàn bộ thông báo")));
@@ -92,7 +98,9 @@ class NotificationControllerTest {
     @Test
     @DisplayName("GET /api/v1/notifications/unread-count: Lấy số thông báo chưa đọc thành công (200 OK)")
     void getUnreadCount_Success() throws Exception {
-        mockMvc.perform(get("/api/v1/notifications/unread-count"))
+        mockMvc.perform(get("/api/v1/notifications/unread-count")
+                        .header("X-User-Id", testUser.getId())
+                        .header("X-Firebase-Uid", testUser.getFirebaseUid()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.unreadCount", notNullValue()));

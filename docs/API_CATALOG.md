@@ -503,3 +503,97 @@
 - **Response Body (200 OK):** `ReviewResponse` chi tiết đánh giá đơn hàng.
 - **Related Screen:** S6, S9
 
+---
+
+### API-019: Lấy Danh sách Thông báo của Sinh viên
+- **API ID:** API-019
+- **HTTP Method:** `GET`
+- **Endpoint:** `/api/v1/notifications`
+- **Purpose:** Lấy danh sách lịch sử thông báo đơn hàng và hệ thống của sinh viên đang đăng nhập kèm phân trang (sắp xếp mới nhất trước).
+- **Feature / Flow:** Flow 9 (Notification Center)
+- **Auth:** Bearer Token / Header `X-User-Id`
+- **Query Parameters:** `page` (default 0), `size` (default 20), `sort` (default `createdAt,desc`)
+- **Response Body (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Lấy danh sách thông báo thành công",
+    "data": {
+      "content": [
+        {
+          "id": 101,
+          "userId": 1,
+          "title": "Đơn hàng đã được xác nhận",
+          "body": "Quán Cơm Tấm B2 đã tiếp nhận đơn KTX-20261102-0501 của bạn.",
+          "type": "ORDER_STATUS",
+          "isRead": false,
+          "dataPayload": "{\"orderId\": 501}",
+          "createdAt": "2026-11-02T12:00:00Z"
+        }
+      ],
+      "pageNumber": 0,
+      "pageSize": 20,
+      "totalElements": 1,
+      "totalPages": 1,
+      "isFirst": true,
+      "isLast": true
+    }
+  }
+  ```
+- **Related Screen:** S12
+
+---
+
+### API-020: Đánh dấu Thông báo Đã đọc
+- **API ID:** API-020
+- **HTTP Method:** `PATCH`
+- **Endpoint:** `/api/v1/notifications/{id}/read`
+- **Purpose:** Cập nhật trạng thái một thông báo sang đã đọc (`isRead = true`).
+- **Feature / Flow:** Flow 9 (Notification Center)
+- **Path Parameters:** `id` (Long, required)
+- **Auth:** Bearer Token / Header `X-User-Id`
+- **Response Body (200 OK):** `NotificationResponse` với `isRead: true`.
+- **Error Codes:** `NOTIFICATION_NOT_FOUND` (404), `ACCESS_DENIED` (403)
+- **Related Screen:** S12
+
+---
+
+### API-021: Đánh dấu Tất cả Thông báo Đã đọc
+- **API ID:** API-021
+- **HTTP Method:** `PATCH`
+- **Endpoint:** `/api/v1/notifications/read-all`
+- **Purpose:** Đánh dấu toàn bộ thông báo chưa đọc của sinh viên sang trạng thái đã đọc.
+- **Feature / Flow:** Flow 9 (Notification Center)
+- **Auth:** Bearer Token / Header `X-User-Id`
+- **Response Body (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Đã đánh dấu toàn bộ thông báo là đã đọc",
+    "data": null
+  }
+  ```
+- **Related Screen:** S12
+
+---
+
+### API-022: Đếm Số lượng Thông báo Chưa đọc
+- **API ID:** API-022
+- **HTTP Method:** `GET`
+- **Endpoint:** `/api/v1/notifications/unread-count`
+- **Purpose:** Đếm nhanh số thông báo chưa đọc để hiển thị badge số đỏ trên icon chuông Flutter.
+- **Feature / Flow:** Flow 9 (Notification Center)
+- **Auth:** Bearer Token / Header `X-User-Id`
+- **Response Body (200 OK):**
+  ```json
+  {
+    "success": true,
+    "message": "Lấy số thông báo chưa đọc thành công",
+    "data": {
+      "unreadCount": 3
+    }
+  }
+  ```
+- **Related Screen:** S1, S6, S12
+
+

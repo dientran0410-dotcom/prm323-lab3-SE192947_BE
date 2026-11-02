@@ -13,3 +13,4 @@ public interface NotificationRepository {
     long countByUserIdAndIsReadFalse(Long userId);
     void markAllAsReadByUserId(Long userId);
 }
+

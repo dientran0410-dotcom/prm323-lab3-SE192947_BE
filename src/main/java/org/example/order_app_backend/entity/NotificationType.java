@@ -6,3 +6,4 @@ public enum NotificationType {
     PAYMENT_UPDATE,
     SYSTEM
 }
+

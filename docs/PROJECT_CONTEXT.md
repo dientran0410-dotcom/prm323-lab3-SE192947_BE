@@ -103,9 +103,10 @@
 | **FLOW 6: Order Pickup & Fulfillment** | **HOÀN THÀNH** | API-010 cập nhật trạng thái đơn, API-011 xác nhận nhận hàng bằng QR / PIN chuyển sang DELIVERED, ghi nhận deliveredAt, 55/55 test pass |
 | **FLOW 7: Dispute & Refund** | **HOÀN THÀNH** | `DisputeEntity`, `DisputeRepository`, `DisputeService`, `DisputeController`, bắt buộc ảnh bằng chứng, thẩm định hoàn tiền <= finalAmount, 66/66 test pass |
 | **FLOW 8: Review & Rating** | **HOÀN THÀNH** | `ReviewEntity`, `ReviewRepository`, `ReviewService`, `ReviewController`, đánh giá 1-5 sao quán/shipper, tự động tính lại ratingAvg & ratingCount, 73/73 test pass |
-| Database Schemas / Entities | **8 BẢNG ACTIVE** | Đã tạo và migrate `users`, `stores`, `menu_items`, `orders`, `order_items`, `payments`, `disputes`, `reviews` trên MySQL |
-| Business Logic & Services | **REVIEW/RATING HOÀN TẤT** | Triển khai theo từng flow |
-| REST Endpoints & Controllers | **ACTIVE** | Health, Auth, User, Store, Menu, Order, Payment, Dispute, Review APIs; 73/73 test pass |
+| **FLOW 9: Notification Center** | **HOÀN THÀNH** | `NotificationEntity`, `NotificationRepository`, `NotificationService`, `NotificationController`, quản lý thông báo, đánh dấu đã đọc, đếm chưa đọc, chuẩn bị FCM, 84/84 test pass |
+| Database Schemas / Entities | **9 BẢNG ACTIVE** | Đã tạo và migrate `users`, `stores`, `menu_items`, `orders`, `order_items`, `payments`, `disputes`, `reviews`, `notifications` trên MySQL |
+| Business Logic & Services | **TOÀN BỘ 10 FLOW HOÀN TẤT** | Toàn bộ các phân hệ nghiệp vụ chính từ Flow 0 đến Flow 9 đã được hiện thực hóa |
+| REST Endpoints & Controllers | **ACTIVE** | Health, Auth, User, Store, Menu, Order, Payment, Dispute, Review, Notification APIs; 84/84 test pass |
 | Bộ Tài liệu Context Chuẩn | **ĐÃ HOÀN THÀNH** | Đầy đủ 8 tệp tài liệu trong thư mục `docs/` |
 
 ---
