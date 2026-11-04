@@ -153,7 +153,7 @@ public class StoreOwnerServiceImpl implements StoreOwnerService {
     private StoreEntity resolveCurrentStore() {
         Long currentUserId = currentUserProvider.getCurrentUserId();
         if (currentUserId != null) {
-            StoreEntity store = storeRepository.findByOwnerId(currentUserId).orElse(null);
+            StoreEntity store = storeRepository.findByOwnerId(currentUserId).stream().findFirst().orElse(null);
             if (store != null) {
                 return store;
             }

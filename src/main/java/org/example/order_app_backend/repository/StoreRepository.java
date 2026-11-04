@@ -19,6 +19,5 @@ public interface StoreRepository {
 
     boolean existsById(Long id);
 
-    Optional<StoreEntity> findByOwnerId(Long ownerId);
+    List<StoreEntity> findByOwnerId(Long ownerId);
 }
-

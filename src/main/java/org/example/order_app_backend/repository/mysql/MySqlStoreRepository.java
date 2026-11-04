@@ -45,8 +45,7 @@ public class MySqlStoreRepository implements StoreRepository {
     }
 
     @Override
-    public Optional<StoreEntity> findByOwnerId(Long ownerId) {
+    public List<StoreEntity> findByOwnerId(Long ownerId) {
         return jpaRepository.findByOwnerId(ownerId);
     }
 }
-
