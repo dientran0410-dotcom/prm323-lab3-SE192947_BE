@@ -1,6 +1,7 @@
 package org.example.order_app_backend.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.example.order_app_backend.dto.common.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,14 +12,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiErrorResponse> handleAppException(AppException ex, HttpServletRequest request) {
+        log.warn("AppException tại [{}]: {}", request.getRequestURI(), ex.getMessage());
         ErrorCode errorCode = ex.getErrorCode();
         ApiErrorResponse response = ApiErrorResponse.builder()
                 .timestamp(Instant.now())
@@ -32,20 +34,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        List<ApiErrorResponse.ValidationErrorDetail> details = new ArrayList<>();
-        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            details.add(ApiErrorResponse.ValidationErrorDetail.builder()
-                    .field(fieldError.getField())
-                    .rejectedValue(fieldError.getRejectedValue())
-                    .message(fieldError.getDefaultMessage())
-                    .build());
-        }
+        List<ApiErrorResponse.ValidationErrorDetail> details = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> ApiErrorResponse.ValidationErrorDetail.builder()
+                        .field(err.getField())
+                        .rejectedValue(err.getRejectedValue())
+                        .message(err.getDefaultMessage())
+                        .build())
+                .toList();
 
         ApiErrorResponse response = ApiErrorResponse.builder()
                 .timestamp(Instant.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .errorCode(ErrorCode.VALIDATION_FAILED.getCode())
-                .message("Dữ liệu đầu vào không hợp lệ. Vui lòng kiểm tra lại các trường.")
+                .message(ErrorCode.VALIDATION_FAILED.getMessage())
                 .path(request.getRequestURI())
                 .errors(details)
                 .build();
@@ -67,11 +68,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
+        log.error("Generic exception tại [{}]: {}", request.getRequestURI(), ex.getMessage(), ex);
         ApiErrorResponse response = ApiErrorResponse.builder()
                 .timestamp(Instant.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .errorCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode())
-                .message("Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.")
+                .message("Đã xảy ra lỗi hệ thống: " + ex.getMessage())
                 .path(request.getRequestURI())
                 .build();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
