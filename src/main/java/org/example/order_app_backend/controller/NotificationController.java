@@ -8,11 +8,14 @@ import org.example.order_app_backend.dto.common.ApiResponse;
 import org.example.order_app_backend.dto.common.PageResponse;
 import org.example.order_app_backend.dto.response.NotificationResponse;
 import org.example.order_app_backend.dto.response.UnreadNotificationCountResponse;
+import org.example.order_app_backend.service.FcmNotificationService;
 import org.example.order_app_backend.service.NotificationService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final FcmNotificationService fcmNotificationService;
 
     @GetMapping
     @Operation(summary = "Lấy danh sách thông báo của tôi (API-019)", description = "Lấy danh sách lịch sử thông báo của sinh viên đang đăng nhập kèm phân trang")
@@ -70,5 +74,18 @@ public class NotificationController {
                 .data(response)
                 .build();
     }
-}
 
+    @PostMapping("/push-test")
+    @Operation(summary = "Gửi thử nghiệm thông báo đẩy FCM", description = "Kiểm tra chu trình đẩy thông báo tới thiết bị người dùng")
+    public ApiResponse<Map<String, Object>> testPush(
+            @RequestParam(name = "userId", defaultValue = "1") Long userId,
+            @RequestParam(name = "title", defaultValue = "Kiểm thử Thông báo KTX") String title,
+            @RequestParam(name = "body", defaultValue = "Đơn hàng đang giao đến sảnh KTX") String body) {
+        boolean sent = fcmNotificationService.sendPushNotification(userId, title, body, Map.of("test", "true"));
+        return ApiResponse.<Map<String, Object>>builder()
+                .success(sent)
+                .message(sent ? "Đã gửi thông báo thành công" : "Người dùng chưa có token để nhận")
+                .data(Map.of("userId", userId, "sent", sent))
+                .build();
+    }
+}

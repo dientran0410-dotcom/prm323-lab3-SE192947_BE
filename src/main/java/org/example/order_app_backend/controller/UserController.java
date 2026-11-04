@@ -5,11 +5,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.order_app_backend.dto.common.ApiResponse;
+import org.example.order_app_backend.dto.request.UpdateFcmTokenRequest;
 import org.example.order_app_backend.dto.request.UpdateUserProfileRequest;
 import org.example.order_app_backend.dto.response.UserResponse;
+import org.example.order_app_backend.service.FcmNotificationService;
 import org.example.order_app_backend.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final FcmNotificationService fcmNotificationService;
 
     @GetMapping("/me")
     @Operation(summary = "Lấy thông tin hồ sơ của người dùng hiện tại (Flow 0 - S13)",
@@ -35,6 +40,19 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật hồ sơ thành công", response));
     }
 
+    @PostMapping("/me/fcm-token")
+    @Operation(summary = "Đăng ký hoặc cập nhật FCM Registration Token cho thiết bị",
+            description = "Lưu token thông báo đẩy của thiết bị di động/Web phục vụ nhận thông báo đơn hàng")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> updateFcmToken(
+            @Valid @RequestBody UpdateFcmTokenRequest request) {
+        Long currentUserId = userService.getCurrentUserProfile().getId();
+        fcmNotificationService.updateDeviceToken(currentUserId, request.getFcmToken(), request.getDeviceType());
+        return ResponseEntity.ok(ApiResponse.success("Đã đồng bộ FCM Token thành công", Map.of(
+                "userId", currentUserId,
+                "fcmToken", request.getFcmToken()
+        )));
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Xem thông tin người dùng theo ID",
             description = "Truy xuất hồ sơ sinh viên hoặc chủ quán theo mã định danh nội bộ.")
@@ -43,4 +61,3 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("Lấy thông tin người dùng thành công", response));
     }
 }
-
