@@ -1,5 +1,6 @@
 package org.example.order_app_backend.service;
 
+import org.example.order_app_backend.dto.response.AdminDashboardResponse;
 import org.example.order_app_backend.dto.response.DisputeResponse;
 import org.example.order_app_backend.dto.response.UserResponse;
 
@@ -12,4 +13,6 @@ public interface AdminService {
     List<UserResponse> getAllUsers();
 
     UserResponse updateUserRole(Long userId, String role);
+
+    AdminDashboardResponse getDashboardStats();
 }

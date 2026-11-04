@@ -2,10 +2,13 @@ package org.example.order_app_backend.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.order_app_backend.dto.response.AdminDashboardResponse;
 import org.example.order_app_backend.dto.response.DisputeResponse;
 import org.example.order_app_backend.dto.response.UserResponse;
 import org.example.order_app_backend.entity.DisputeEntity;
+import org.example.order_app_backend.entity.DisputeStatus;
 import org.example.order_app_backend.entity.OrderEntity;
+import org.example.order_app_backend.entity.OrderStatus;
 import org.example.order_app_backend.entity.UserEntity;
 import org.example.order_app_backend.entity.UserRole;
 import org.example.order_app_backend.exception.AppException;
@@ -67,5 +70,37 @@ public class AdminServiceImpl implements AdminService {
         } catch (IllegalArgumentException e) {
             throw new AppException(ErrorCode.VALIDATION_FAILED);
         }
+    }
+
+    @Override
+    public AdminDashboardResponse getDashboardStats() {
+        List<OrderEntity> allOrders = orderRepository.findAll();
+        double totalRevenue = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.COMPLETED)
+                .mapToDouble(OrderEntity::getFinalAmount)
+                .sum();
+
+        long activeOrders = allOrders.stream()
+                .filter(o -> o.getStatus() != OrderStatus.COMPLETED && o.getStatus() != OrderStatus.CANCELLED)
+                .count();
+
+        List<DisputeEntity> allDisputes = disputeRepository.findAll();
+        long pendingDisputes = allDisputes.stream()
+                .filter(d -> d.getStatus() == DisputeStatus.PENDING)
+                .count();
+
+        long totalUsers = userRepository.count();
+
+        double resolutionRate = allDisputes.isEmpty() ? 100.0 :
+                ((double) (allDisputes.size() - pendingDisputes) / allDisputes.size()) * 100.0;
+
+        return AdminDashboardResponse.builder()
+                .totalRevenue(totalRevenue)
+                .totalOrders((long) allOrders.size())
+                .activeOrders(activeOrders)
+                .pendingDisputes(pendingDisputes)
+                .totalUsers(totalUsers)
+                .disputeResolutionRate(Math.round(resolutionRate * 10.0) / 10.0)
+                .build();
     }
 }
