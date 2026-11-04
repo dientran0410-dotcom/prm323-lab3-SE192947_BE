@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.order_app_backend.dto.common.ApiResponse;
+import org.example.order_app_backend.dto.request.LoginRequest;
 import org.example.order_app_backend.dto.request.SyncUserRequest;
 import org.example.order_app_backend.dto.response.UserResponse;
 import org.example.order_app_backend.service.UserService;
@@ -29,5 +30,12 @@ public class AuthController {
         UserResponse response = userService.syncUser(request);
         return ResponseEntity.ok(ApiResponse.success("Đồng bộ tài khoản thành công", response));
     }
-}
 
+    @PostMapping("/login")
+    @Operation(summary = "Đăng nhập nhanh theo tài khoản 4 Role",
+            description = "Xác thực tức thì bằng Email hoặc SĐT của 4 vai trò hệ thống")
+    public ResponseEntity<ApiResponse<UserResponse>> login(@Valid @RequestBody LoginRequest request) {
+        UserResponse response = userService.login(request);
+        return ResponseEntity.ok(ApiResponse.success("Đăng nhập thành công", response));
+    }
+}
