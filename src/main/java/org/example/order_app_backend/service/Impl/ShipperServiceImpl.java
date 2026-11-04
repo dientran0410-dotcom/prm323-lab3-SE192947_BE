@@ -2,8 +2,10 @@ package org.example.order_app_backend.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.order_app_backend.dto.request.WithdrawalRequest;
 import org.example.order_app_backend.dto.response.OrderResponse;
 import org.example.order_app_backend.dto.response.ShipperBatchDeliveryResponse;
+import org.example.order_app_backend.dto.response.ShipperWalletResponse;
 import org.example.order_app_backend.entity.*;
 import org.example.order_app_backend.exception.AppException;
 import org.example.order_app_backend.exception.ErrorCode;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,5 +99,57 @@ public class ShipperServiceImpl implements ShipperService {
 
         log.info("Shipper nhận đơn {} chuyển sang DELIVERING", saved.getOrderCode());
         return orderMapper.toResponse(saved, items, storeName);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse deliverOrder(Long orderId) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        order.setStatus(OrderStatus.DELIVERED);
+        OrderEntity saved = orderRepository.save(order);
+        List<OrderItemEntity> items = orderItemRepository.findByOrderId(saved.getId());
+        String storeName = storeRepository.findById(saved.getStoreId()).map(StoreEntity::getName).orElse("Quán KTX");
+
+        log.info("Shipper giao thành công đơn {} tại cổng KTX", saved.getOrderCode());
+        return orderMapper.toResponse(saved, items, storeName);
+    }
+
+    @Override
+    public ShipperWalletResponse getWallet() {
+        ShipperBatchDeliveryResponse batch = getBatchesBySlot("CA_TRUA_11H30");
+        BigDecimal earnings = batch.getTotalDeliveryEarnings();
+        BigDecimal codTotal = BigDecimal.ZERO;
+
+        for (ShipperBatchDeliveryResponse.ShipperOrderItemDto ord : batch.getOrders()) {
+            if ("COD".equalsIgnoreCase(ord.getPaymentMethod())) {
+                codTotal = codTotal.add(ord.getFinalAmount() != null ? ord.getFinalAmount() : BigDecimal.ZERO);
+            }
+        }
+
+        List<ShipperWalletResponse.WalletTransactionItem> txs = new ArrayList<>();
+        txs.add(ShipperWalletResponse.WalletTransactionItem.builder()
+                .transactionId("TX-KTX-101")
+                .type("CONG_THU_LAO")
+                .title("Thù lao ca gom trưa 11:30 KTX Khu B")
+                .amount(earnings)
+                .createdAt(LocalDateTime.now().minusHours(2))
+                .status("SUCCESS")
+                .build());
+
+        return ShipperWalletResponse.builder()
+                .walletBalance(BigDecimal.valueOf(350000))
+                .pendingEarnings(earnings)
+                .completedEarnings(BigDecimal.valueOf(350000))
+                .completedTrips(12)
+                .codCollectedToday(codTotal)
+                .recentTransactions(txs)
+                .build();
+    }
+
+    @Override
+    public void withdraw(WithdrawalRequest request) {
+        log.info("Shipper yêu cầu rút {} về tài khoản {} - {}", request.getAmount(), request.getBankName(), request.getBankAccountNumber());
     }
 }
