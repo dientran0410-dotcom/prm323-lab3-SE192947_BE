@@ -2,10 +2,13 @@ package org.example.order_app_backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.order_app_backend.dto.common.ApiResponse;
+import org.example.order_app_backend.dto.request.WithdrawalRequest;
 import org.example.order_app_backend.dto.response.OrderResponse;
 import org.example.order_app_backend.dto.response.ShipperBatchDeliveryResponse;
+import org.example.order_app_backend.dto.response.ShipperWalletResponse;
 import org.example.order_app_backend.service.ShipperService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,5 +34,26 @@ public class ShipperController {
     public ResponseEntity<ApiResponse<OrderResponse>> pickupOrder(@PathVariable("id") Long id) {
         OrderResponse response = shipperService.pickupOrder(id);
         return ResponseEntity.ok(ApiResponse.success("Đã nhận đơn tại quán, bắt đầu giao đến cổng KTX", response));
+    }
+
+    @PatchMapping("/orders/{id}/deliver")
+    @Operation(summary = "Xác nhận trao hàng tại cổng KTX", description = "Shipper giao hàng thành công tại cổng KTX và hoàn tất đơn")
+    public ResponseEntity<ApiResponse<OrderResponse>> deliverOrder(@PathVariable("id") Long id) {
+        OrderResponse response = shipperService.deliverOrder(id);
+        return ResponseEntity.ok(ApiResponse.success("Đã giao hàng thành công tại cổng KTX", response));
+    }
+
+    @GetMapping("/wallet")
+    @Operation(summary = "Xem thông tin ví thu nhập và đối soát", description = "Lấy số dư ví, tiền thù lao chờ đối soát và lịch sử giao dịch ví")
+    public ResponseEntity<ApiResponse<ShipperWalletResponse>> getWallet() {
+        ShipperWalletResponse response = shipperService.getWallet();
+        return ResponseEntity.ok(ApiResponse.success("Lấy thông tin ví thu nhập thành công", response));
+    }
+
+    @PostMapping("/withdraw")
+    @Operation(summary = "Yêu cầu rút tiền thù lao", description = "Gửi yêu cầu rút thù lao tích lũy về tài khoản ngân hàng")
+    public ResponseEntity<ApiResponse<Void>> withdraw(@Valid @RequestBody WithdrawalRequest request) {
+        shipperService.withdraw(request);
+        return ResponseEntity.ok(ApiResponse.success("Yêu cầu rút tiền thù lao đã được tiếp nhận", null));
     }
 }
