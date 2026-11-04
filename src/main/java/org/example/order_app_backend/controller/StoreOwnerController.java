@@ -9,6 +9,7 @@ import org.example.order_app_backend.dto.common.ApiResponse;
 import org.example.order_app_backend.dto.response.MenuItemResponse;
 import org.example.order_app_backend.dto.response.OwnerOrderSummaryResponse;
 import org.example.order_app_backend.dto.response.StoreResponse;
+import org.example.order_app_backend.dto.response.StoreRevenueResponse;
 import org.example.order_app_backend.service.StoreOwnerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,14 @@ public class StoreOwnerController {
             @RequestParam(value = "slotTime", required = false, defaultValue = "CA_TRUA_11H30") String slotTime) {
         List<OwnerOrderSummaryResponse> response = storeOwnerService.getMyStoreOrders(slotTime);
         return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đơn gom thành công", response));
+    }
+
+    @GetMapping("/revenue")
+    @Operation(summary = "Báo cáo doanh thu và đối soát COD theo ca", description = "Xem tổng kết doanh thu, số tiền COD và chuyển khoản theo ca gom")
+    public ResponseEntity<ApiResponse<StoreRevenueResponse>> getStoreRevenue(
+            @RequestParam(value = "slotTime", required = false, defaultValue = "CA_TRUA_11H30") String slotTime) {
+        StoreRevenueResponse response = storeOwnerService.getStoreRevenue(slotTime);
+        return ResponseEntity.ok(ApiResponse.success("Lấy báo cáo doanh thu thành công", response));
     }
 
     @PatchMapping("/menu-items/{id}/availability")
