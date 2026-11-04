@@ -2,6 +2,7 @@ package org.example.order_app_backend.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.order_app_backend.dto.request.LoginRequest;
 import org.example.order_app_backend.dto.request.SyncUserRequest;
 import org.example.order_app_backend.dto.request.UpdateUserProfileRequest;
 import org.example.order_app_backend.dto.response.UserResponse;
@@ -57,6 +58,18 @@ public class UserServiceImpl implements UserService {
         UserEntity saved = userRepository.save(newUser);
         log.info("Đăng ký thành công sinh viên mới ID: {}, Email: {}", saved.getId(), saved.getEmail());
         return userMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse login(LoginRequest request) {
+        String identifier = request.getEmailOrPhone().trim().toLowerCase();
+        UserEntity user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByPhone(identifier))
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND, "Không tìm thấy tài khoản với email/SĐT: " + identifier));
+
+        log.info("Người dùng {} (Vai trò: {}) đăng nhập thành công qua mật khẩu", user.getDisplayName(), user.getRole());
+        return userMapper.toResponse(user);
     }
 
     @Override
@@ -120,4 +133,3 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(saved);
     }
 }
-
