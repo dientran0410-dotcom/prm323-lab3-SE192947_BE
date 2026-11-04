@@ -50,6 +50,9 @@ public class UserEntity {
     @Column(name = "ktx_room", length = 20)
     private String ktxRoom;
 
+    @Column(name = "fcm_token", length = 512)
+    private String fcmToken;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -58,4 +61,3 @@ public class UserEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 }
-
