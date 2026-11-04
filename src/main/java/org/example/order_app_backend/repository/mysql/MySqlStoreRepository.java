@@ -43,5 +43,10 @@ public class MySqlStoreRepository implements StoreRepository {
     public boolean existsById(Long id) {
         return jpaRepository.existsById(id);
     }
+
+    @Override
+    public Optional<StoreEntity> findByOwnerId(Long ownerId) {
+        return jpaRepository.findByOwnerId(ownerId);
+    }
 }
 

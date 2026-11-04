@@ -18,5 +18,7 @@ public interface StoreRepository {
     Page<StoreEntity> searchStores(String keyword, String campusZone, Boolean isActive, Pageable pageable);
 
     boolean existsById(Long id);
+
+    Optional<StoreEntity> findByOwnerId(Long ownerId);
 }
 

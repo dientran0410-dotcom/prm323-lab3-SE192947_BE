@@ -21,5 +21,7 @@ public interface StoreJpaRepository extends JpaRepository<StoreEntity, Long> {
             @Param("isActive") Boolean isActive,
             Pageable pageable
     );
+
+    java.util.Optional<StoreEntity> findByOwnerId(Long ownerId);
 }
 
