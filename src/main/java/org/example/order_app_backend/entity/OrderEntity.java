@@ -37,6 +37,12 @@ public class OrderEntity {
     @Column(name = "store_id", nullable = false)
     private Long storeId;
 
+    @Column(name = "shipper_id")
+    private Long shipperId;
+
+    @Column(name = "delivery_batch_code", length = 50)
+    private String deliveryBatchCode;
+
     @Column(name = "slot_time", nullable = false, length = 50)
     private String slotTime; // CA_TRUA_11H30, CA_CHIEU_18H00
 
