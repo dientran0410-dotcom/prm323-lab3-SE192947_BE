@@ -25,6 +25,9 @@ import org.example.order_app_backend.service.StoreOwnerService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.example.order_app_backend.dto.response.StoreRevenueResponse;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,6 +98,39 @@ public class StoreOwnerServiceImpl implements StoreOwnerService {
         }
 
         return responseList;
+    }
+
+    @Override
+    public StoreRevenueResponse getStoreRevenue(String slotTime) {
+        StoreEntity store = resolveCurrentStore();
+        List<OwnerOrderSummaryResponse> orders = getMyStoreOrders(slotTime);
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        BigDecimal codAmount = BigDecimal.ZERO;
+        BigDecimal onlineAmount = BigDecimal.ZERO;
+        int completedCount = 0;
+
+        for (OwnerOrderSummaryResponse ord : orders) {
+            BigDecimal amt = ord.getFinalAmount() != null ? ord.getFinalAmount() : BigDecimal.ZERO;
+            totalRevenue = totalRevenue.add(amt);
+            if ("COD".equalsIgnoreCase(ord.getPaymentMethod())) {
+                codAmount = codAmount.add(amt);
+            } else {
+                onlineAmount = onlineAmount.add(amt);
+            }
+            if (ord.getStatus() != null && ("DELIVERED".equals(ord.getStatus().name()) || "PICKED_UP".equals(ord.getStatus().name()))) {
+                completedCount++;
+            }
+        }
+
+        return StoreRevenueResponse.builder()
+                .shiftName(slotTime != null ? slotTime : "CA_TRUA_11H30")
+                .totalRevenue(totalRevenue)
+                .codAmount(codAmount)
+                .onlineAmount(onlineAmount)
+                .totalOrders(orders.size())
+                .completedOrders(completedCount)
+                .orderDetails(orders)
+                .build();
     }
 
     @Override
