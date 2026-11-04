@@ -65,7 +65,7 @@ public class AdminServiceImpl implements AdminService {
             log.info("Admin cập nhật role cho user {} sang: {}", user.getEmail(), targetRole);
             return userMapper.toResponse(saved);
         } catch (IllegalArgumentException e) {
-            throw new AppException(ErrorCode.INVALID_PARAMETER);
+            throw new AppException(ErrorCode.VALIDATION_FAILED);
         }
     }
 }
