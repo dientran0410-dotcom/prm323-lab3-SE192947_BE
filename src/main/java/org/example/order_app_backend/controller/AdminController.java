@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.order_app_backend.dto.common.ApiResponse;
+import org.example.order_app_backend.dto.response.AdminDashboardResponse;
 import org.example.order_app_backend.dto.response.DisputeResponse;
 import org.example.order_app_backend.dto.response.UserResponse;
 import org.example.order_app_backend.service.AdminService;
@@ -19,6 +20,13 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+
+    @GetMapping("/dashboard-stats")
+    @Operation(summary = "Lấy dữ liệu thống kê tổng quan Web Admin", description = "Trả về doanh thu, số đơn, khiếu nại và người dùng phục vụ Cổng Web Admin KTX")
+    public ResponseEntity<ApiResponse<AdminDashboardResponse>> getDashboardStats() {
+        AdminDashboardResponse response = adminService.getDashboardStats();
+        return ResponseEntity.ok(ApiResponse.success("Lấy số liệu thống kê quản trị thành công", response));
+    }
 
     @GetMapping("/disputes")
     @Operation(summary = "Lấy tất cả khiếu nại trên hệ thống", description = "Quản trị viên xem toàn bộ danh sách khiếu nại của sinh viên")
