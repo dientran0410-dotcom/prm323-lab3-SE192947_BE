@@ -31,7 +31,10 @@ public class SecurityConfig {
                                 "/api/v1/health",
                                 "/api/v1/health/**",
                                 "/api/v1/stores/**",
-                                "/api/v1/auth/**"
+                                "/api/v1/auth/**",
+                                "/api/v1/owner/**",
+                                "/api/v1/shipper/**",
+                                "/api/v1/admin/**"
                         ).permitAll()
                         .anyRequest().permitAll() // Cho phép trong giai đoạn Foundation, sẽ thắt chặt theo từng Flow
                 );
