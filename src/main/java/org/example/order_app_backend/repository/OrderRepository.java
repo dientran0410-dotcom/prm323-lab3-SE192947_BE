@@ -24,5 +24,11 @@ public interface OrderRepository {
     List<OrderEntity> findAll();
 
     boolean existsById(Long id);
+
+    List<OrderEntity> findByStoreIdAndSlotTimeOrderByCreatedAtDesc(Long storeId, String slotTime);
+
+    List<OrderEntity> findBySlotTimeAndStatusInOrderByCreatedAtAsc(String slotTime, List<org.example.order_app_backend.entity.OrderStatus> statuses);
+
+    List<OrderEntity> findByShipperIdOrderByCreatedAtDesc(Long shipperId);
 }
 

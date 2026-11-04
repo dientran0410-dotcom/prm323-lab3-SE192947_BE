@@ -58,5 +58,20 @@ public class MySqlOrderRepository implements OrderRepository {
     public boolean existsById(Long id) {
         return jpaRepository.existsById(id);
     }
+
+    @Override
+    public List<OrderEntity> findByStoreIdAndSlotTimeOrderByCreatedAtDesc(Long storeId, String slotTime) {
+        return jpaRepository.findByStoreIdAndSlotTimeOrderByCreatedAtDesc(storeId, slotTime);
+    }
+
+    @Override
+    public List<OrderEntity> findBySlotTimeAndStatusInOrderByCreatedAtAsc(String slotTime, List<org.example.order_app_backend.entity.OrderStatus> statuses) {
+        return jpaRepository.findBySlotTimeAndStatusInOrderByCreatedAtAsc(slotTime, statuses);
+    }
+
+    @Override
+    public List<OrderEntity> findByShipperIdOrderByCreatedAtDesc(Long shipperId) {
+        return jpaRepository.findByShipperIdOrderByCreatedAtDesc(shipperId);
+    }
 }
 
