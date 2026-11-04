@@ -19,5 +19,7 @@ public interface UserRepository {
     boolean existsByEmail(String email);
 
     boolean existsByFirebaseUid(String firebaseUid);
+
+    java.util.List<UserEntity> findByRole(org.example.order_app_backend.entity.UserRole role);
 }
 

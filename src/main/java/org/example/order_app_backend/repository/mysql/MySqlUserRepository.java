@@ -50,5 +50,10 @@ public class MySqlUserRepository implements UserRepository {
     public boolean existsByFirebaseUid(String firebaseUid) {
         return jpaRepository.existsByFirebaseUid(firebaseUid);
     }
+
+    @Override
+    public java.util.List<UserEntity> findByRole(org.example.order_app_backend.entity.UserRole role) {
+        return jpaRepository.findByRole(role);
+    }
 }
 
