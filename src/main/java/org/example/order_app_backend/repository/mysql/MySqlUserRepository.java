@@ -2,11 +2,13 @@ package org.example.order_app_backend.repository.mysql;
 
 import lombok.RequiredArgsConstructor;
 import org.example.order_app_backend.entity.UserEntity;
+import org.example.order_app_backend.entity.UserRole;
 import org.example.order_app_backend.repository.UserRepository;
 import org.example.order_app_backend.repository.mysql.jpa.UserJpaRepository;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -52,8 +54,12 @@ public class MySqlUserRepository implements UserRepository {
     }
 
     @Override
-    public java.util.List<UserEntity> findByRole(org.example.order_app_backend.entity.UserRole role) {
+    public List<UserEntity> findByRole(UserRole role) {
         return jpaRepository.findByRole(role);
     }
-}
 
+    @Override
+    public long count() {
+        return jpaRepository.count();
+    }
+}

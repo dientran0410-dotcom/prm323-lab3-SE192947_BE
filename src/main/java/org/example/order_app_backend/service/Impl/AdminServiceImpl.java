@@ -76,12 +76,12 @@ public class AdminServiceImpl implements AdminService {
     public AdminDashboardResponse getDashboardStats() {
         List<OrderEntity> allOrders = orderRepository.findAll();
         double totalRevenue = allOrders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.COMPLETED)
-                .mapToDouble(OrderEntity::getFinalAmount)
+                .filter(o -> o.getStatus() == OrderStatus.DELIVERED)
+                .mapToDouble(o -> o.getFinalAmount() != null ? o.getFinalAmount().doubleValue() : 0.0)
                 .sum();
 
         long activeOrders = allOrders.stream()
-                .filter(o -> o.getStatus() != OrderStatus.COMPLETED && o.getStatus() != OrderStatus.CANCELLED)
+                .filter(o -> o.getStatus() != OrderStatus.DELIVERED && o.getStatus() != OrderStatus.CANCELLED)
                 .count();
 
         List<DisputeEntity> allDisputes = disputeRepository.findAll();

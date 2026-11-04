@@ -1,7 +1,9 @@
 package org.example.order_app_backend.repository;
 
 import org.example.order_app_backend.entity.UserEntity;
+import org.example.order_app_backend.entity.UserRole;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository {
@@ -20,6 +22,7 @@ public interface UserRepository {
 
     boolean existsByFirebaseUid(String firebaseUid);
 
-    java.util.List<UserEntity> findByRole(org.example.order_app_backend.entity.UserRole role);
-}
+    List<UserEntity> findByRole(UserRole role);
 
+    long count();
+}
