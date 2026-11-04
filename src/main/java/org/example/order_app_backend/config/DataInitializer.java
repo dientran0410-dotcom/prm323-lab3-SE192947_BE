@@ -64,7 +64,7 @@ public class DataInitializer implements ApplicationRunner {
             userRepository.save(UserEntity.builder()
                     .firebaseUid("shipper_hung_mock_uid")
                     .email("shipper.hung@fpt.edu.vn")
-                    .phone("0912345678")
+                    .phone("0918765432")
                     .displayName("Nguyễn Hùng (Shipper Đội Gom KTX)")
                     .role(UserRole.SHIPPER)
                     .avatarUrl("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d")
