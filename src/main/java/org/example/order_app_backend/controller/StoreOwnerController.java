@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.order_app_backend.dto.request.UpdateMenuItemAvailabilityRequest;
-import org.example.order_app_backend.dto.response.ApiResponse;
+import org.example.order_app_backend.dto.common.ApiResponse;
 import org.example.order_app_backend.dto.response.MenuItemResponse;
 import org.example.order_app_backend.dto.response.OwnerOrderSummaryResponse;
 import org.example.order_app_backend.dto.response.StoreResponse;
@@ -27,7 +27,7 @@ public class StoreOwnerController {
     @Operation(summary = "Lấy thông tin quán ăn của tôi", description = "Trả về thông tin chi tiết quán ăn của chủ quán")
     public ResponseEntity<ApiResponse<StoreResponse>> getMyStore() {
         StoreResponse response = storeOwnerService.getMyStore();
-        return ResponseEntity.ok(ApiResponse.success(response, "Lấy thông tin quán thành công"));
+        return ResponseEntity.ok(ApiResponse.success("Lấy thông tin quán thành công", response));
     }
 
     @GetMapping("/orders")
@@ -35,7 +35,7 @@ public class StoreOwnerController {
     public ResponseEntity<ApiResponse<List<OwnerOrderSummaryResponse>>> getMyStoreOrders(
             @RequestParam(value = "slotTime", required = false, defaultValue = "CA_TRUA_11H30") String slotTime) {
         List<OwnerOrderSummaryResponse> response = storeOwnerService.getMyStoreOrders(slotTime);
-        return ResponseEntity.ok(ApiResponse.success(response, "Lấy danh sách đơn gom thành công"));
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách đơn gom thành công", response));
     }
 
     @PatchMapping("/menu-items/{id}/availability")
@@ -44,6 +44,6 @@ public class StoreOwnerController {
             @PathVariable("id") Long id,
             @Valid @RequestBody UpdateMenuItemAvailabilityRequest request) {
         MenuItemResponse response = storeOwnerService.updateMenuItemAvailability(id, request);
-        return ResponseEntity.ok(ApiResponse.success(response, "Cập nhật trạng thái món thành công"));
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái món thành công", response));
     }
 }

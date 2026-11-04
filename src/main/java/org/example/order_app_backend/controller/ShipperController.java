@@ -3,7 +3,7 @@ package org.example.order_app_backend.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.example.order_app_backend.dto.response.ApiResponse;
+import org.example.order_app_backend.dto.common.ApiResponse;
 import org.example.order_app_backend.dto.response.OrderResponse;
 import org.example.order_app_backend.dto.response.ShipperBatchDeliveryResponse;
 import org.example.order_app_backend.service.ShipperService;
@@ -23,13 +23,13 @@ public class ShipperController {
     public ResponseEntity<ApiResponse<ShipperBatchDeliveryResponse>> getBatchesBySlot(
             @RequestParam(value = "slotTime", required = false, defaultValue = "CA_TRUA_11H30") String slotTime) {
         ShipperBatchDeliveryResponse response = shipperService.getBatchesBySlot(slotTime);
-        return ResponseEntity.ok(ApiResponse.success(response, "Lấy danh sách chuyến gom thành công"));
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách chuyến gom thành công", response));
     }
 
     @PatchMapping("/orders/{id}/pickup")
     @Operation(summary = "Xác nhận nhận đơn tại quán", description = "Shipper nhận đơn từ quán để chuyển trạng thái sang DELIVERING")
     public ResponseEntity<ApiResponse<OrderResponse>> pickupOrder(@PathVariable("id") Long id) {
         OrderResponse response = shipperService.pickupOrder(id);
-        return ResponseEntity.ok(ApiResponse.success(response, "Đã nhận đơn tại quán, bắt đầu giao đến cổng KTX"));
+        return ResponseEntity.ok(ApiResponse.success("Đã nhận đơn tại quán, bắt đầu giao đến cổng KTX", response));
     }
 }
