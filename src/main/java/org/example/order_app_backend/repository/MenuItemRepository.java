@@ -22,5 +22,7 @@ public interface MenuItemRepository {
     List<MenuItemEntity> findByStoreIdAndCategoryAndIsAvailable(Long storeId, String category, Boolean isAvailable);
 
     boolean existsById(Long id);
+
+    void deleteById(Long id);
 }
 

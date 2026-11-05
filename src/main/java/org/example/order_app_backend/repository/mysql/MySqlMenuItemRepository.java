@@ -56,5 +56,10 @@ public class MySqlMenuItemRepository implements MenuItemRepository {
     public boolean existsById(Long id) {
         return jpaRepository.existsById(id);
     }
+
+    @Override
+    public void deleteById(Long id) {
+        jpaRepository.deleteById(id);
+    }
 }
 

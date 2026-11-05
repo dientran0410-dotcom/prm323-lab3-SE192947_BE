@@ -15,5 +15,7 @@ public interface MenuItemService {
     MenuItemResponse createMenuItem(Long storeId, CreateMenuItemRequest request);
 
     MenuItemResponse updateMenuItem(Long id, UpdateMenuItemRequest request);
+
+    void deleteMenuItem(Long id);
 }
 

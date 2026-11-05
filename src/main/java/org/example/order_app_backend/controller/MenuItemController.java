@@ -66,5 +66,12 @@ public class MenuItemController {
         MenuItemResponse item = menuItemService.updateMenuItem(id, request);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin món ăn thành công", item));
     }
+
+    @DeleteMapping("/menu-items/{id}")
+    @Operation(summary = "Xóa món ăn khỏi thực đơn", description = "Xóa vĩnh viễn món ăn theo ID")
+    public ResponseEntity<ApiResponse<Void>> deleteMenuItem(@PathVariable Long id) {
+        menuItemService.deleteMenuItem(id);
+        return ResponseEntity.ok(ApiResponse.success("Xóa món ăn thành công", null));
+    }
 }
 

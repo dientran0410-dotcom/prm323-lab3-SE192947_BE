@@ -82,5 +82,15 @@ public class MenuItemServiceImpl implements MenuItemService {
         log.info("Cập nhật thành công món ăn ID: {}", saved.getId());
         return menuItemMapper.toResponse(saved);
     }
+
+    @Override
+    @Transactional
+    public void deleteMenuItem(Long id) {
+        if (!menuItemRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Không tìm thấy món ăn với ID: " + id);
+        }
+        menuItemRepository.deleteById(id);
+        log.info("Xóa thành công món ăn ID: {}", id);
+    }
 }
 
