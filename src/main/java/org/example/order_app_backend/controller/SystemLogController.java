@@ -28,3 +28,4 @@ public class SystemLogController {
         return ResponseEntity.ok(ApiResponse.success("Đã tiếp nhận log sự cố thành công", "ACCEPTED"));
     }
 }
+

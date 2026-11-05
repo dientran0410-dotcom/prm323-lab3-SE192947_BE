@@ -17,3 +17,4 @@ public class AdminDashboardResponse {
     private Long totalUsers;
     private Double disputeResolutionRate;
 }
+

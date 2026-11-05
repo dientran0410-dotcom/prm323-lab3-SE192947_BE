@@ -10,3 +10,4 @@ public interface FcmNotificationService {
 
     boolean sendOrderStatusPush(Long orderId, String status);
 }
+

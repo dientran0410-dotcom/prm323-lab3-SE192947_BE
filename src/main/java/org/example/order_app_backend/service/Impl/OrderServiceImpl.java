@@ -15,6 +15,7 @@ import org.example.order_app_backend.repository.MenuItemRepository;
 import org.example.order_app_backend.repository.OrderItemRepository;
 import org.example.order_app_backend.repository.OrderRepository;
 import org.example.order_app_backend.repository.StoreRepository;
+import org.example.order_app_backend.repository.UserRepository;
 import org.example.order_app_backend.security.CurrentUserProvider;
 import org.example.order_app_backend.service.OrderService;
 import org.springframework.data.domain.Page;
@@ -46,6 +47,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepository;
     private final StoreRepository storeRepository;
     private final MenuItemRepository menuItemRepository;
+    private final UserRepository userRepository;
     private final OrderMapper orderMapper;
     private final CurrentUserProvider currentUserProvider;
 
@@ -184,7 +186,13 @@ public class OrderServiceImpl implements OrderService {
             currentUserId = 1L;
         }
 
-        List<OrderEntity> orders = orderRepository.findByUserIdOrderByCreatedAtDesc(currentUserId);
+        UserEntity user = userRepository.findById(currentUserId).orElse(null);
+        List<OrderEntity> orders;
+        if (user != null && user.getRole() == UserRole.ADMIN) {
+            orders = orderRepository.findAll();
+        } else {
+            orders = orderRepository.findByUserIdOrderByCreatedAtDesc(currentUserId);
+        }
         return orders.stream()
                 .map(order -> {
                     List<OrderItemEntity> items = orderItemRepository.findByOrderId(order.getId());

@@ -38,3 +38,4 @@ public class ClientCrashLogRequest {
     @Builder.Default
     private Instant timestamp = Instant.now();
 }
+

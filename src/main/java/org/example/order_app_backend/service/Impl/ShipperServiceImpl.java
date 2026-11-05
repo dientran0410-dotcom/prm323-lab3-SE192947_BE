@@ -40,7 +40,7 @@ public class ShipperServiceImpl implements ShipperService {
     public ShipperBatchDeliveryResponse getBatchesBySlot(String slotTime) {
         String activeSlot = (slotTime != null && !slotTime.isBlank()) ? slotTime : "CA_TRUA_11H30";
 
-        List<OrderStatus> statuses = List.of(OrderStatus.CONFIRMED, OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.DELIVERING);
+        List<OrderStatus> statuses = List.of(OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.DELIVERING);
         List<OrderEntity> orders = orderRepository.findBySlotTimeAndStatusInOrderByCreatedAtAsc(activeSlot, statuses);
 
         if (orders.isEmpty()) {

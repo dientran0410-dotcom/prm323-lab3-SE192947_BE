@@ -44,3 +44,4 @@ class AdminControllerTest {
                 .andExpect(jsonPath("$.data").isArray());
     }
 }
+

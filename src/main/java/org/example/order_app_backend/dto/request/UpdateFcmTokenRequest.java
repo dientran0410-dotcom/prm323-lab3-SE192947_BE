@@ -19,3 +19,4 @@ public class UpdateFcmTokenRequest {
 
     private String timestamp;
 }
+

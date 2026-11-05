@@ -18,3 +18,4 @@ public class ServerStatusResponse {
     private String environment;
     private String version;
 }
+

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.order_app_backend.dto.common.ApiResponse;
 import org.example.order_app_backend.dto.response.AdminDashboardResponse;
 import org.example.order_app_backend.dto.response.DisputeResponse;
+import org.example.order_app_backend.dto.response.OrderResponse;
 import org.example.order_app_backend.dto.response.UserResponse;
 import org.example.order_app_backend.service.AdminService;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,13 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+
+    @GetMapping("/orders")
+    @Operation(summary = "Lấy tất cả đơn hàng gom ca trên hệ thống", description = "Quản trị viên giám sát toàn bộ đơn hàng gom ca ở tất cả các tòa KTX")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getAllOrders() {
+        List<OrderResponse> response = adminService.getAllOrders();
+        return ResponseEntity.ok(ApiResponse.success("Lấy danh sách tất cả đơn hàng thành công", response));
+    }
 
     @GetMapping("/dashboard-stats")
     @Operation(summary = "Lấy dữ liệu thống kê tổng quan Web Admin", description = "Trả về doanh thu, số đơn, khiếu nại và người dùng phục vụ Cổng Web Admin KTX")

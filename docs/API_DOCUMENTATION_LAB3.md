@@ -106,3 +106,4 @@ Hệ thống xác thực người dùng thông qua Header `X-User-Id` và Bearer
    * Vào tab Cá nhân (S13) -> Nhấn nút **"Kích hoạt Fatal Crash"** màu đỏ -> Xác nhận -> App sập văng ra màn hình chính điện thoại -> Mở lại app -> Báo cáo sự cố được đồng bộ lên Firebase Console.
 3. **Kiểm thử Web Admin Portal**:
    * Mở trình duyệt Web (Chrome) truy cập ứng dụng -> Hệ thống tự động vào giao diện Web Admin -> Xem chỉ số KPI -> Mở Trọng tài Khiếu nại -> Xem ảnh bằng chứng phóng to -> Nhấn duyệt hoàn tiền.
+

@@ -18,6 +18,12 @@ import org.example.order_app_backend.mapper.UserMapper;
 import org.example.order_app_backend.repository.DisputeRepository;
 import org.example.order_app_backend.repository.OrderRepository;
 import org.example.order_app_backend.repository.UserRepository;
+import org.example.order_app_backend.dto.response.OrderResponse;
+import org.example.order_app_backend.entity.OrderItemEntity;
+import org.example.order_app_backend.entity.StoreEntity;
+import org.example.order_app_backend.mapper.OrderMapper;
+import org.example.order_app_backend.repository.OrderItemRepository;
+import org.example.order_app_backend.repository.StoreRepository;
 import org.example.order_app_backend.service.AdminService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +37,12 @@ public class AdminServiceImpl implements AdminService {
 
     private final DisputeRepository disputeRepository;
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final DisputeMapper disputeMapper;
     private final UserMapper userMapper;
+    private final OrderMapper orderMapper;
 
     @Override
     public List<DisputeResponse> getAllDisputes() {
@@ -102,5 +111,19 @@ public class AdminServiceImpl implements AdminService {
                 .totalUsers(totalUsers)
                 .disputeResolutionRate(Math.round(resolutionRate * 10.0) / 10.0)
                 .build();
+    }
+
+    @Override
+    public List<OrderResponse> getAllOrders() {
+        List<OrderEntity> orders = orderRepository.findAll();
+        return orders.stream()
+                .map(order -> {
+                    List<OrderItemEntity> items = orderItemRepository.findByOrderId(order.getId());
+                    String storeName = storeRepository.findById(order.getStoreId())
+                            .map(StoreEntity::getName)
+                            .orElse("Quán KTX");
+                    return orderMapper.toResponse(order, items, storeName);
+                })
+                .toList();
     }
 }
