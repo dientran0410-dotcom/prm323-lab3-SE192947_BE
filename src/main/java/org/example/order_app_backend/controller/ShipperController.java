@@ -36,6 +36,24 @@ public class ShipperController {
         return ResponseEntity.ok(ApiResponse.success("Đã nhận đơn tại quán, bắt đầu giao đến cổng KTX", response));
     }
 
+    @PatchMapping("/orders/{id}/cancel-pickup")
+    @Operation(summary = "Shipper hủy nhận đơn / trả lại quán", description = "Hủy nhận đơn do xe hỏng hoặc sự cố đột xuất, chuyển đơn về lại READY cho shipper khác")
+    public ResponseEntity<ApiResponse<OrderResponse>> cancelPickup(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "reason", required = false) String reason) {
+        OrderResponse response = shipperService.cancelPickupOrder(id, reason);
+        return ResponseEntity.ok(ApiResponse.success("Đã hủy nhận đơn và trả lại bếp KTX thành công", response));
+    }
+
+    @PostMapping("/orders/{id}/report-failure")
+    @Operation(summary = "Báo cáo giao không thành công / Khách bom hàng", description = "Shipper ghi nhận khách không nhận hoặc không liên lạc được để đối soát")
+    public ResponseEntity<ApiResponse<OrderResponse>> reportFailure(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "reason", required = false) String reason) {
+        OrderResponse response = shipperService.reportDeliveryFailure(id, reason);
+        return ResponseEntity.ok(ApiResponse.success("Đã ghi nhận báo cáo giao không thành công / Khách bom hàng", response));
+    }
+
     @PatchMapping("/orders/{id}/deliver")
     @Operation(summary = "Xác nhận trao hàng tại cổng KTX", description = "Shipper giao hàng thành công tại cổng KTX và hoàn tất đơn")
     public ResponseEntity<ApiResponse<OrderResponse>> deliverOrder(@PathVariable("id") Long id) {

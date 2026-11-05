@@ -11,6 +11,10 @@ public interface ShipperService {
 
     OrderResponse pickupOrder(Long orderId);
 
+    OrderResponse cancelPickupOrder(Long orderId, String reason);
+
+    OrderResponse reportDeliveryFailure(Long orderId, String reason);
+
     OrderResponse deliverOrder(Long orderId);
 
     ShipperWalletResponse getWallet();

@@ -40,12 +40,12 @@ public class ShipperServiceImpl implements ShipperService {
     public ShipperBatchDeliveryResponse getBatchesBySlot(String slotTime) {
         String activeSlot = (slotTime != null && !slotTime.isBlank()) ? slotTime : "CA_TRUA_11H30";
 
-        List<OrderStatus> statuses = List.of(OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.DELIVERING);
+        List<OrderStatus> statuses = List.of(OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.DELIVERING);
         List<OrderEntity> orders = orderRepository.findBySlotTimeAndStatusInOrderByCreatedAtAsc(activeSlot, statuses);
 
         if (orders.isEmpty()) {
             orders = orderRepository.findAll().stream()
-                    .filter(o -> o.getStatus() == OrderStatus.DELIVERING || o.getStatus() == OrderStatus.READY || o.getStatus() == OrderStatus.DELIVERED)
+                    .filter(o -> o.getStatus() == OrderStatus.PREPARING || o.getStatus() == OrderStatus.READY || o.getStatus() == OrderStatus.DELIVERING)
                     .toList();
         }
 
@@ -98,6 +98,44 @@ public class ShipperServiceImpl implements ShipperService {
         String storeName = storeRepository.findById(saved.getStoreId()).map(StoreEntity::getName).orElse("Quán KTX");
 
         log.info("Shipper nhận đơn {} chuyển sang DELIVERING", saved.getOrderCode());
+        return orderMapper.toResponse(saved, items, storeName);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse cancelPickupOrder(Long orderId, String reason) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        order.setShipperId(null);
+        order.setStatus(OrderStatus.READY);
+        if (reason != null && !reason.isBlank()) {
+            order.setNote((order.getNote() != null ? order.getNote() + " | " : "") + "Shipper trả đơn: " + reason);
+        }
+
+        OrderEntity saved = orderRepository.save(order);
+        List<OrderItemEntity> items = orderItemRepository.findByOrderId(saved.getId());
+        String storeName = storeRepository.findById(saved.getStoreId()).map(StoreEntity::getName).orElse("Quán KTX");
+
+        log.info("Shipper hủy nhận đơn {} lý do: {}, chuyển lại trạng thái READY", saved.getOrderCode(), reason);
+        return orderMapper.toResponse(saved, items, storeName);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse reportDeliveryFailure(Long orderId, String reason) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        order.setStatus(OrderStatus.CANCELLED);
+        String noteReason = (reason != null && !reason.isBlank()) ? reason : "Khách không nghe máy / Bom hàng";
+        order.setNote((order.getNote() != null ? order.getNote() + " | " : "") + "Sự cố giao: " + noteReason);
+
+        OrderEntity saved = orderRepository.save(order);
+        List<OrderItemEntity> items = orderItemRepository.findByOrderId(saved.getId());
+        String storeName = storeRepository.findById(saved.getStoreId()).map(StoreEntity::getName).orElse("Quán KTX");
+
+        log.warn("Shipper báo cáo giao thất bại đơn {} lý do: {}", saved.getOrderCode(), noteReason);
         return orderMapper.toResponse(saved, items, storeName);
     }
 
