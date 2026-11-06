@@ -146,3 +146,4 @@ static String _dynamicBaseUrl = 'https://api-food.yourdomain.com/api/v1';
 | Dừng hệ thống | `docker compose down` |
 | Rebuild khi cập nhật code | `docker compose up -d --build` |
 | Kiểm tra trạng thái container | `docker compose ps` |
+
