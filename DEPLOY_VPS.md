@@ -141,3 +141,4 @@ Khi backend đã có domain HTTPS công khai, mở app Flutter để kết nối
      sudo mkswap /swapfile
      sudo swapon /swapfile
      ```
+

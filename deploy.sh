@@ -68,3 +68,4 @@ done
 echo -e "${RED}⚠️ Backend đang khởi động chậm hoặc gặp sự cố. Kiểm tra log bằng lệnh:${NC}"
 echo "docker compose logs -f backend"
 exit 1
+
