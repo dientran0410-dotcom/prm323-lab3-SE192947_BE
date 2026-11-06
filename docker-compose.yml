@@ -1,0 +1,53 @@
+services:
+  # ========================================================
+  # Spring Boot Backend (Order Food KTX Service)
+  # ========================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: order_food_backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - TZ=Asia/Ho_Chi_Minh
+      # Cấu hình Database: Mặc định đọc từ file .env
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:h2:file:./data/food_ordering_db;DB_CLOSE_DELAY=-1;MODE=MySQL}
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=${SPRING_DATASOURCE_DRIVER_CLASS_NAME:-org.h2.Driver}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-sa}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-}
+      - SPRING_JPA_DATABASE_PLATFORM=${SPRING_JPA_DATABASE_PLATFORM:-org.hibernate.dialect.H2Dialect}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
+      - SPRING_H2_CONSOLE_ENABLED=${SPRING_H2_CONSOLE_ENABLED:-false}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # ========================================================
+  # (Tùy chọn) MySQL 8 Container nếu muốn chạy DB ngay trên VPS
+  # Bật lên bằng lệnh: docker compose --profile with-mysql up -d
+  # ========================================================
+  mysql:
+    image: mysql:8.0
+    container_name: order_food_mysql
+    restart: always
+    profiles: ["with-mysql"]
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_secure_password_2026}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-food_ordering_db}
+      MYSQL_USER: ${MYSQL_USER:-food_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-food_user_password_2026}
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
