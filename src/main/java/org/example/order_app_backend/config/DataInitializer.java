@@ -85,6 +85,21 @@ public class DataInitializer implements ApplicationRunner {
 
             log.info("Khởi tạo thành công 4 tài khoản cho 4 Role!");
         }
+
+        // 1b. Sinh viên KTX thứ 2 để thử nghiệm luồng gom ghép đơn
+        if (userRepository.findByEmail("student2@fpt.edu.vn").isEmpty()) {
+            userRepository.save(UserEntity.builder()
+                    .firebaseUid("student2_mock_uid")
+                    .email("student2@fpt.edu.vn")
+                    .phone("0988888222")
+                    .displayName("Lê Thùy Linh (Sinh viên 2)")
+                    .role(UserRole.STUDENT)
+                    .avatarUrl("https://images.unsplash.com/photo-1494790108377-be9c29b29330")
+                    .ktxBuilding("KTX Khu B - Tòa BA2")
+                    .ktxRoom("508")
+                    .build());
+            log.info("Khởi tạo tài khoản Sinh viên 2 (student2@fpt.edu.vn) thành công!");
+        }
     }
 
     private void initStoresAndMenus() {
