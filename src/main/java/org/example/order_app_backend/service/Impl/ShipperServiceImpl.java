@@ -162,7 +162,7 @@ public class ShipperServiceImpl implements ShipperService {
         List<OrderEntity> allOrders = orderRepository.findAll();
 
         List<OrderEntity> deliveredOrders = allOrders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.DELIVERED || o.getStatus() == OrderStatus.COMPLETED)
+                .filter(o -> o.getStatus() == OrderStatus.DELIVERED)
                 .toList();
 
         List<OrderEntity> activeOrders = allOrders.stream()

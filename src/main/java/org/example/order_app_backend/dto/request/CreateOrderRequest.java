@@ -34,6 +34,8 @@ public class CreateOrderRequest {
 
     private java.math.BigDecimal groupDiscountAmount;
 
+    private java.math.BigDecimal deliveryFee;
+
     @NotEmpty(message = "Đơn hàng phải chứa ít nhất một món ăn")
     @Valid
     private List<OrderItemRequest> items;

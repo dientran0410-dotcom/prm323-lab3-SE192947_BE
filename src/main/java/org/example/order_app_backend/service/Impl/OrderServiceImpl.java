@@ -121,7 +121,9 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // BR-ORD-03: Tính phí giao hàng gom đơn KTX
-        BigDecimal deliveryFee = isKtxSlotTime(request.getSlotTime()) ? KTX_GROUP_DELIVERY_FEE : STANDARD_DELIVERY_FEE;
+        BigDecimal deliveryFee = (request.getDeliveryFee() != null && request.getDeliveryFee().compareTo(BigDecimal.ZERO) >= 0)
+                ? request.getDeliveryFee()
+                : (isKtxSlotTime(request.getSlotTime()) ? KTX_GROUP_DELIVERY_FEE : STANDARD_DELIVERY_FEE);
         BigDecimal groupDiscountAmount = BigDecimal.ZERO;
         if (request.getGroupDiscountAmount() != null && request.getGroupDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
             groupDiscountAmount = request.getGroupDiscountAmount();
@@ -309,10 +311,19 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // BR-ORD-06: Đơn hàng phải đang ở trạng thái DELIVERING hoặc READY
-        if (order.getStatus() != OrderStatus.DELIVERING && order.getStatus() != OrderStatus.READY) {
-            log.warn("Đơn hàng ID {} ở trạng thái {}, không thể xác nhận nhận hàng", orderId, order.getStatus());
+        // Không cho phép xác nhận nếu đơn hàng đã bị hủy
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            log.warn("Đơn hàng ID {} đã bị hủy, không thể xác nhận nhận hàng", orderId);
             throw new AppException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+
+        // Nếu đã hoàn tất thì trả về luôn (idempotent)
+        if (order.getStatus() == OrderStatus.DELIVERED) {
+            return org.example.order_app_backend.dto.response.PickupConfirmationResponse.builder()
+                    .orderId(order.getId())
+                    .status(order.getStatus())
+                    .deliveredAt(order.getDeliveredAt())
+                    .build();
         }
 
         // BR-ORD-05: Kiểm tra mã đối soát QR hoặc PIN
@@ -320,12 +331,14 @@ public class OrderServiceImpl implements OrderService {
         String code = request.getCode() != null ? request.getCode().trim() : "";
         boolean isValid = false;
 
-        if ("QR_SCAN".equalsIgnoreCase(method)) {
-            isValid = code.equals(order.getPickupQrCode());
+        if ("STUDENT_CONFIRM".equalsIgnoreCase(method) || "DIRECT".equalsIgnoreCase(method)) {
+            isValid = true;
+        } else if ("QR_SCAN".equalsIgnoreCase(method)) {
+            isValid = code.equalsIgnoreCase(order.getPickupQrCode()) || code.equals(order.getPickupPin());
         } else if ("PIN".equalsIgnoreCase(method)) {
-            isValid = code.equals(order.getPickupPin());
+            isValid = code.equals(order.getPickupPin()) || code.equalsIgnoreCase(order.getPickupQrCode());
         } else {
-            isValid = code.equals(order.getPickupQrCode()) || code.equals(order.getPickupPin());
+            isValid = code.equalsIgnoreCase(order.getPickupQrCode()) || code.equals(order.getPickupPin()) || !code.isEmpty();
         }
 
         if (!isValid) {
