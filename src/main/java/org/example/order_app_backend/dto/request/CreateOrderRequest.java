@@ -30,6 +30,10 @@ public class CreateOrderRequest {
 
     private String note;
 
+    private String voucherCode;
+
+    private java.math.BigDecimal groupDiscountAmount;
+
     @NotEmpty(message = "Đơn hàng phải chứa ít nhất một món ăn")
     @Valid
     private List<OrderItemRequest> items;

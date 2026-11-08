@@ -123,7 +123,13 @@ public class OrderServiceImpl implements OrderService {
         // BR-ORD-03: Tính phí giao hàng gom đơn KTX
         BigDecimal deliveryFee = isKtxSlotTime(request.getSlotTime()) ? KTX_GROUP_DELIVERY_FEE : STANDARD_DELIVERY_FEE;
         BigDecimal groupDiscountAmount = BigDecimal.ZERO;
+        if (request.getGroupDiscountAmount() != null && request.getGroupDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+            groupDiscountAmount = request.getGroupDiscountAmount();
+        }
         BigDecimal finalAmount = subtotalAmount.add(deliveryFee).subtract(groupDiscountAmount);
+        if (finalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            finalAmount = BigDecimal.ZERO;
+        }
 
         // Lấy User ID từ Security Context
         Long currentUserId = currentUserProvider.getCurrentUserId();
