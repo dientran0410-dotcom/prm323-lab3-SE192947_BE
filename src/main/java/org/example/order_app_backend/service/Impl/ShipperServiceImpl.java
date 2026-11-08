@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -146,6 +148,7 @@ public class ShipperServiceImpl implements ShipperService {
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
         order.setStatus(OrderStatus.DELIVERED);
+        order.setUpdatedAt(Instant.now());
         OrderEntity saved = orderRepository.save(order);
         List<OrderItemEntity> items = orderItemRepository.findByOrderId(saved.getId());
         String storeName = storeRepository.findById(saved.getStoreId()).map(StoreEntity::getName).orElse("Quán KTX");
@@ -156,31 +159,75 @@ public class ShipperServiceImpl implements ShipperService {
 
     @Override
     public ShipperWalletResponse getWallet() {
-        ShipperBatchDeliveryResponse batch = getBatchesBySlot("CA_TRUA_11H30");
-        BigDecimal earnings = batch.getTotalDeliveryEarnings();
+        List<OrderEntity> allOrders = orderRepository.findAll();
+
+        List<OrderEntity> deliveredOrders = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.DELIVERED || o.getStatus() == OrderStatus.COMPLETED)
+                .toList();
+
+        List<OrderEntity> activeOrders = allOrders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.PREPARING || o.getStatus() == OrderStatus.READY || o.getStatus() == OrderStatus.DELIVERING)
+                .toList();
+
+        BigDecimal feePerOrder = BigDecimal.valueOf(15000);
+        BigDecimal completedEarnings = BigDecimal.ZERO;
         BigDecimal codTotal = BigDecimal.ZERO;
 
-        for (ShipperBatchDeliveryResponse.ShipperOrderItemDto ord : batch.getOrders()) {
-            if ("COD".equalsIgnoreCase(ord.getPaymentMethod())) {
+        List<ShipperWalletResponse.WalletTransactionItem> txs = new ArrayList<>();
+
+        for (OrderEntity ord : deliveredOrders) {
+            BigDecimal fee = (ord.getDeliveryFee() != null && ord.getDeliveryFee().compareTo(BigDecimal.valueOf(10000)) >= 0)
+                    ? ord.getDeliveryFee()
+                    : feePerOrder;
+            completedEarnings = completedEarnings.add(fee);
+
+            if (ord.getPaymentMethod() == PaymentMethod.COD) {
                 codTotal = codTotal.add(ord.getFinalAmount() != null ? ord.getFinalAmount() : BigDecimal.ZERO);
             }
+
+            LocalDateTime txDate = ord.getUpdatedAt() != null
+                    ? LocalDateTime.ofInstant(ord.getUpdatedAt(), ZoneId.systemDefault())
+                    : (ord.getCreatedAt() != null ? LocalDateTime.ofInstant(ord.getCreatedAt(), ZoneId.systemDefault()) : LocalDateTime.now());
+
+            txs.add(ShipperWalletResponse.WalletTransactionItem.builder()
+                    .transactionId("TX-" + ord.getOrderCode().replaceAll("[^a-zA-Z0-9]", ""))
+                    .type("CONG_THU_LAO")
+                    .title("Thù lao giao đơn " + ord.getOrderCode() + " (" + (ord.getPickupLocation() != null ? ord.getPickupLocation() : "Cổng KTX") + ")")
+                    .amount(fee)
+                    .createdAt(txDate)
+                    .status("SUCCESS")
+                    .build());
         }
 
-        List<ShipperWalletResponse.WalletTransactionItem> txs = new ArrayList<>();
-        txs.add(ShipperWalletResponse.WalletTransactionItem.builder()
-                .transactionId("TX-KTX-101")
-                .type("CONG_THU_LAO")
-                .title("Thù lao ca gom trưa 11:30 KTX Khu B")
-                .amount(earnings)
-                .createdAt(LocalDateTime.now().minusHours(2))
-                .status("SUCCESS")
-                .build());
+        BigDecimal pendingEarnings = BigDecimal.valueOf(activeOrders.size()).multiply(feePerOrder);
+        if (pendingEarnings.compareTo(BigDecimal.ZERO) == 0 && !activeOrders.isEmpty()) {
+            pendingEarnings = BigDecimal.valueOf(10000);
+        }
+
+        BigDecimal baseBalance = BigDecimal.valueOf(350000);
+        BigDecimal currentBalance = baseBalance.add(completedEarnings);
+
+        if (txs.isEmpty()) {
+            txs.add(ShipperWalletResponse.WalletTransactionItem.builder()
+                    .transactionId("TX-KTX-101")
+                    .type("CONG_THU_LAO")
+                    .title("Thù lao ca gom trưa 11:30 KTX Khu B")
+                    .amount(BigDecimal.valueOf(10000))
+                    .createdAt(LocalDateTime.now().minusHours(2))
+                    .status("SUCCESS")
+                    .build());
+        }
+
+        txs.sort((a, b) -> {
+            if (a.getCreatedAt() == null || b.getCreatedAt() == null) return 0;
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        });
 
         return ShipperWalletResponse.builder()
-                .walletBalance(BigDecimal.valueOf(350000))
-                .pendingEarnings(earnings)
-                .completedEarnings(BigDecimal.valueOf(350000))
-                .completedTrips(12)
+                .walletBalance(currentBalance)
+                .pendingEarnings(pendingEarnings)
+                .completedEarnings(completedEarnings.compareTo(BigDecimal.ZERO) > 0 ? completedEarnings : BigDecimal.valueOf(40000))
+                .completedTrips(12 + deliveredOrders.size())
                 .codCollectedToday(codTotal)
                 .recentTransactions(txs)
                 .build();
