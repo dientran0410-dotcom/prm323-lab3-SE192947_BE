@@ -1,4 +1,4 @@
-package org.example.order_app_backend.controller;
+﻿package org.example.order_app_backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,5 +57,15 @@ public class AdminController {
             @RequestParam("role") String role) {
         UserResponse response = adminService.updateUserRole(id, role);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật vai trò người dùng thành công", response));
+    }
+
+    @PatchMapping({"/users/{id}/toggle-ban", "/users/{id}/ban"})
+    @Operation(summary = "Khóa hoặc mở khóa tài khoản người dùng (Ban/Lock account)", description = "Ban Quản lý KTX xử lý vi phạm, đình chỉ hoặc mở lại tài khoản")
+    public ResponseEntity<ApiResponse<UserResponse>> toggleUserBan(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "banned", required = false) Boolean banned) {
+        UserResponse response = adminService.toggleUserBan(id, banned);
+        String actionMsg = Boolean.TRUE.equals(response.getIsBanned()) ? "Đã khóa tài khoản người dùng thành công" : "Đã mở khóa tài khoản người dùng thành công";
+        return ResponseEntity.ok(ApiResponse.success(actionMsg, response));
     }
 }

@@ -1,4 +1,4 @@
-package org.example.order_app_backend.service.impl;
+﻿package org.example.order_app_backend.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +67,10 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByPhone(identifier))
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND, "Không tìm thấy tài khoản với email/SĐT: " + identifier));
+
+        if (Boolean.TRUE.equals(user.getIsBanned())) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Tài khoản của bạn đã bị khóa do vi phạm chính sách hoặc khiếu nại. Vui lòng liên hệ Ban quản lý KTX.");
+        }
 
         log.info("Người dùng {} (Vai trò: {}) đăng nhập thành công qua mật khẩu", user.getDisplayName(), user.getRole());
         return userMapper.toResponse(user);

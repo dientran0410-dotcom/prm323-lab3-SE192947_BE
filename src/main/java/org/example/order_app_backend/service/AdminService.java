@@ -15,6 +15,8 @@ public interface AdminService {
 
     UserResponse updateUserRole(Long userId, String role);
 
+    UserResponse toggleUserBan(Long userId, Boolean banned);
+
     AdminDashboardResponse getDashboardStats();
 
     List<OrderResponse> getAllOrders();

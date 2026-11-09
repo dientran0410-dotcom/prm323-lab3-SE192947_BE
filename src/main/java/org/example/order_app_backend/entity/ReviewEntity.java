@@ -11,7 +11,8 @@ import java.time.Instant;
 @Table(name = "reviews", indexes = {
         @Index(name = "idx_reviews_order_id", columnList = "order_id", unique = true),
         @Index(name = "idx_reviews_store_id", columnList = "store_id"),
-        @Index(name = "idx_reviews_user_id", columnList = "user_id")
+        @Index(name = "idx_reviews_user_id", columnList = "user_id"),
+        @Index(name = "idx_reviews_shipper_id", columnList = "shipper_id")
 })
 @Getter
 @Setter
@@ -33,6 +34,9 @@ public class ReviewEntity {
     @Column(name = "store_id", nullable = false)
     private Long storeId;
 
+    @Column(name = "shipper_id")
+    private Long shipperId;
+
     @Column(name = "store_rating", nullable = false)
     private Integer storeRating; // 1 - 5 sao
 
@@ -42,6 +46,12 @@ public class ReviewEntity {
     @Column(name = "comment", columnDefinition = "TEXT")
     private String comment;
 
+    @Column(name = "shipper_comment", columnDefinition = "TEXT")
+    private String shipperComment;
+
+    @Column(name = "images", columnDefinition = "TEXT")
+    private String images; // Chuỗi URL ảnh phân cách bởi dấu phẩy (tối đa 3 ảnh)
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -50,4 +60,3 @@ public class ReviewEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 }
-

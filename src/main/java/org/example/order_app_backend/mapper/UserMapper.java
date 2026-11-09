@@ -25,6 +25,9 @@ public class UserMapper {
                 .avatarUrl(entity.getAvatarUrl())
                 .ktxBuilding(entity.getKtxBuilding())
                 .ktxRoom(entity.getKtxRoom())
+                .ratingAvg(entity.getRatingAvg())
+                .ratingCount(entity.getRatingCount())
+                .isBanned(entity.getIsBanned() != null ? entity.getIsBanned() : false)
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
@@ -86,4 +89,3 @@ public class UserMapper {
         }
     }
 }
-

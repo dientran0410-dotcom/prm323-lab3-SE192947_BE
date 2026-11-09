@@ -19,6 +19,9 @@ public interface ReviewRepository {
 
     Page<ReviewEntity> findByStoreId(Long storeId, Pageable pageable);
 
+    List<ReviewEntity> findByShipperIdOrderByCreatedAtDesc(Long shipperId);
+
+    Page<ReviewEntity> findByShipperId(Long shipperId, Pageable pageable);
+
     boolean existsByOrderId(Long orderId);
 }
-

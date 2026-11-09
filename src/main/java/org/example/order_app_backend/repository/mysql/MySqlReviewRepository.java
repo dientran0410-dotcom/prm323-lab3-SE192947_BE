@@ -45,8 +45,17 @@ public class MySqlReviewRepository implements ReviewRepository {
     }
 
     @Override
+    public List<ReviewEntity> findByShipperIdOrderByCreatedAtDesc(Long shipperId) {
+        return jpaRepository.findByShipperIdOrderByCreatedAtDesc(shipperId);
+    }
+
+    @Override
+    public Page<ReviewEntity> findByShipperId(Long shipperId, Pageable pageable) {
+        return jpaRepository.findByShipperId(shipperId, pageable);
+    }
+
+    @Override
     public boolean existsByOrderId(Long orderId) {
         return jpaRepository.existsByOrderId(orderId);
     }
 }
-

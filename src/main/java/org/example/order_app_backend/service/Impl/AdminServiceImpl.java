@@ -57,7 +57,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<UserResponse> getAllUsers() {
-        List<UserEntity> users = userRepository.findByRole(UserRole.STUDENT);
+        List<UserEntity> users = userRepository.findAll();
         if (users.isEmpty()) {
             return List.of();
         }
@@ -79,6 +79,19 @@ public class AdminServiceImpl implements AdminService {
         } catch (IllegalArgumentException e) {
             throw new AppException(ErrorCode.VALIDATION_FAILED);
         }
+    }
+
+    @Override
+    @Transactional
+    public UserResponse toggleUserBan(Long userId, Boolean banned) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        boolean newBannedState = banned != null ? banned : (user.getIsBanned() == null || !user.getIsBanned());
+        user.setIsBanned(newBannedState);
+        UserEntity saved = userRepository.save(user);
+        log.info("Admin cập nhật trạng thái ban/khóa tài khoản cho user {}: {}", user.getEmail(), newBannedState);
+        return userMapper.toResponse(saved);
     }
 
     @Override

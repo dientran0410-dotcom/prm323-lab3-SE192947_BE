@@ -18,6 +18,9 @@ public interface ReviewJpaRepository extends JpaRepository<ReviewEntity, Long> {
 
     Page<ReviewEntity> findByStoreId(Long storeId, Pageable pageable);
 
+    List<ReviewEntity> findByShipperIdOrderByCreatedAtDesc(Long shipperId);
+
+    Page<ReviewEntity> findByShipperId(Long shipperId, Pageable pageable);
+
     boolean existsByOrderId(Long orderId);
 }
-

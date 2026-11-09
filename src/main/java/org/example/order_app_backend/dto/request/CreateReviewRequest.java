@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,11 +22,16 @@ public class CreateReviewRequest {
     @Max(value = 5, message = "Điểm đánh giá tối đa là 5 sao")
     private Integer storeRating;
 
-    @NotNull(message = "Điểm đánh giá shipper không được để trống")
     @Min(value = 1, message = "Điểm đánh giá tối thiểu là 1 sao")
     @Max(value = 5, message = "Điểm đánh giá tối đa là 5 sao")
-    private Integer shipperRating;
+    @Builder.Default
+    private Integer shipperRating = 5;
 
+    // Cmt hoặc ảnh đều được, có cmt ko có ảnh cũng dc, ko có cmt mà có ảnh cũng dc, không ràng buộc
     private String comment;
-}
 
+    private String shipperComment;
+
+    // Danh sách URL ảnh minh chứng (tối đa 3 ảnh)
+    private List<String> images;
+}

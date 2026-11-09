@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
@@ -42,10 +43,18 @@ public class UserResponse {
     @Schema(description = "Số phòng KTX", example = "312")
     private String ktxRoom;
 
+    @Schema(description = "Điểm đánh giá trung bình (dành cho Shipper)", example = "4.9")
+    private BigDecimal ratingAvg;
+
+    @Schema(description = "Tổng số lượt đánh giá (dành cho Shipper)", example = "25")
+    private Integer ratingCount;
+
+    @Schema(description = "Trạng thái khóa tài khoản / ban bởi Admin", example = "false")
+    private Boolean isBanned;
+
     @Schema(description = "Thời gian đăng ký tài khoản")
     private Instant createdAt;
 
     @Schema(description = "Thời gian cập nhật hồ sơ gần nhất")
     private Instant updatedAt;
 }
-

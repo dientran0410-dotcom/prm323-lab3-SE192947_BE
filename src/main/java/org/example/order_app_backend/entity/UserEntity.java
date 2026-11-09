@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -52,6 +53,18 @@ public class UserEntity {
 
     @Column(name = "fcm_token", length = 512)
     private String fcmToken;
+
+    @Column(name = "rating_avg", precision = 3, scale = 2)
+    @Builder.Default
+    private BigDecimal ratingAvg = BigDecimal.valueOf(5.00);
+
+    @Column(name = "rating_count")
+    @Builder.Default
+    private Integer ratingCount = 0;
+
+    @Column(name = "is_banned", nullable = false)
+    @Builder.Default
+    private Boolean isBanned = false;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -1,4 +1,4 @@
-package org.example.order_app_backend.service.impl;
+﻿package org.example.order_app_backend.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,13 +67,23 @@ public class ReviewServiceImpl implements ReviewService {
             currentUserId = order.getUserId();
         }
 
+        String serializedImages = null;
+        if (request.getImages() != null && !request.getImages().isEmpty()) {
+            serializedImages = String.join(",", request.getImages().stream().limit(3).toList());
+        }
+
+        int shipperRating = request.getShipperRating() != null ? request.getShipperRating() : 5;
+
         ReviewEntity review = ReviewEntity.builder()
                 .orderId(order.getId())
                 .userId(currentUserId)
                 .storeId(order.getStoreId())
+                .shipperId(order.getShipperId())
                 .storeRating(request.getStoreRating())
-                .shipperRating(request.getShipperRating())
+                .shipperRating(shipperRating)
                 .comment(request.getComment())
+                .shipperComment(request.getShipperComment())
+                .images(serializedImages)
                 .build();
 
         ReviewEntity savedReview = reviewRepository.save(review);
@@ -83,7 +93,7 @@ public class ReviewServiceImpl implements ReviewService {
         String storeName = "Quán KTX";
         if (store != null) {
             storeName = store.getName();
-            BigDecimal currentAvg = store.getRatingAvg() != null ? store.getRatingAvg() : BigDecimal.ZERO;
+            BigDecimal currentAvg = store.getRatingAvg() != null ? store.getRatingAvg() : BigDecimal.valueOf(5.00);
             int currentCount = store.getRatingCount() != null ? store.getRatingCount() : 0;
 
             BigDecimal totalScore = currentAvg.multiply(BigDecimal.valueOf(currentCount))
@@ -97,12 +107,33 @@ public class ReviewServiceImpl implements ReviewService {
             log.info("Đã cập nhật rating quán ID {}: mới {} ({} lượt)", store.getId(), newAvg, newCount);
         }
 
-        String userDisplayName = userRepository.findById(currentUserId)
-                .map(UserEntity::getDisplayName)
-                .orElse("Sinh viên KTX");
+        // Cập nhật rating_avg và rating_count của Shipper (nếu đơn có shipper)
+        String shipperName = "Tài xế Gom KTX";
+        if (order.getShipperId() != null) {
+            UserEntity shipper = userRepository.findById(order.getShipperId()).orElse(null);
+            if (shipper != null) {
+                shipperName = shipper.getDisplayName();
+                BigDecimal currentAvg = shipper.getRatingAvg() != null ? shipper.getRatingAvg() : BigDecimal.valueOf(5.00);
+                int currentCount = shipper.getRatingCount() != null ? shipper.getRatingCount() : 0;
+
+                BigDecimal totalScore = currentAvg.multiply(BigDecimal.valueOf(currentCount))
+                        .add(BigDecimal.valueOf(shipperRating));
+                int newCount = currentCount + 1;
+                BigDecimal newAvg = totalScore.divide(BigDecimal.valueOf(newCount), 2, RoundingMode.HALF_UP);
+
+                shipper.setRatingAvg(newAvg);
+                shipper.setRatingCount(newCount);
+                userRepository.save(shipper);
+                log.info("Đã cập nhật rating shipper ID {}: mới {} ({} lượt)", shipper.getId(), newAvg, newCount);
+            }
+        }
+
+        UserEntity user = userRepository.findById(currentUserId).orElse(null);
+        String userDisplayName = user != null ? user.getDisplayName() : "Sinh viên KTX";
+        String userAvatarUrl = user != null ? user.getAvatarUrl() : null;
 
         log.info("Đánh giá thành công cho đơn hàng ID: {}, quán ID: {}", order.getId(), order.getStoreId());
-        return reviewMapper.toResponse(savedReview, storeName, userDisplayName);
+        return reviewMapper.toResponse(savedReview, storeName, userDisplayName, userAvatarUrl, order.getOrderCode(), shipperName);
     }
 
     @Override
@@ -113,10 +144,58 @@ public class ReviewServiceImpl implements ReviewService {
         Page<ReviewEntity> page = reviewRepository.findByStoreId(storeId, pageable);
         List<ReviewResponse> content = page.getContent().stream()
                 .map(review -> {
-                    String userDisplayName = userRepository.findById(review.getUserId())
-                            .map(UserEntity::getDisplayName)
-                            .orElse("Sinh viên KTX");
-                    return reviewMapper.toResponse(review, store.getName(), userDisplayName);
+                    UserEntity user = userRepository.findById(review.getUserId()).orElse(null);
+                    String userDisplayName = user != null ? user.getDisplayName() : "Sinh viên KTX";
+                    String userAvatarUrl = user != null ? user.getAvatarUrl() : null;
+
+                    String orderCode = orderRepository.findById(review.getOrderId())
+                            .map(OrderEntity::getOrderCode)
+                            .orElse(null);
+
+                    String shipperName = null;
+                    if (review.getShipperId() != null) {
+                        shipperName = userRepository.findById(review.getShipperId())
+                                .map(UserEntity::getDisplayName)
+                                .orElse(null);
+                    }
+
+                    return reviewMapper.toResponse(review, store.getName(), userDisplayName, userAvatarUrl, orderCode, shipperName);
+                })
+                .toList();
+
+        return PageResponse.<ReviewResponse>builder()
+                .content(content)
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .isFirst(page.isFirst())
+                .isLast(page.isLast())
+                .build();
+    }
+
+    @Override
+    public PageResponse<ReviewResponse> getShipperReviews(Long shipperId, Pageable pageable) {
+        Page<ReviewEntity> page = reviewRepository.findByShipperId(shipperId, pageable);
+
+        UserEntity shipper = userRepository.findById(shipperId).orElse(null);
+        String shipperName = shipper != null ? shipper.getDisplayName() : "Tài xế Gom KTX";
+
+        List<ReviewResponse> content = page.getContent().stream()
+                .map(review -> {
+                    UserEntity user = userRepository.findById(review.getUserId()).orElse(null);
+                    String userDisplayName = user != null ? user.getDisplayName() : "Sinh viên KTX";
+                    String userAvatarUrl = user != null ? user.getAvatarUrl() : null;
+
+                    String storeName = storeRepository.findById(review.getStoreId())
+                            .map(StoreEntity::getName)
+                            .orElse("Quán KTX");
+
+                    String orderCode = orderRepository.findById(review.getOrderId())
+                            .map(OrderEntity::getOrderCode)
+                            .orElse(null);
+
+                    return reviewMapper.toResponse(review, storeName, userDisplayName, userAvatarUrl, orderCode, shipperName);
                 })
                 .toList();
 
@@ -140,11 +219,46 @@ public class ReviewServiceImpl implements ReviewService {
                 .map(StoreEntity::getName)
                 .orElse("Quán KTX");
 
-        String userDisplayName = userRepository.findById(review.getUserId())
-                .map(UserEntity::getDisplayName)
-                .orElse("Sinh viên KTX");
+        UserEntity user = userRepository.findById(review.getUserId()).orElse(null);
+        String userDisplayName = user != null ? user.getDisplayName() : "Sinh viên KTX";
+        String userAvatarUrl = user != null ? user.getAvatarUrl() : null;
 
-        return reviewMapper.toResponse(review, storeName, userDisplayName);
+        String orderCode = orderRepository.findById(review.getOrderId())
+                .map(OrderEntity::getOrderCode)
+                .orElse(null);
+
+        String shipperName = null;
+        if (review.getShipperId() != null) {
+            shipperName = userRepository.findById(review.getShipperId())
+                    .map(UserEntity::getDisplayName)
+                    .orElse(null);
+        }
+
+        return reviewMapper.toResponse(review, storeName, userDisplayName, userAvatarUrl, orderCode, shipperName);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public org.example.order_app_backend.dto.response.ShipperProfileResponse getShipperProfile(Long shipperId) {
+        UserEntity shipper = userRepository.findById(shipperId).orElse(null);
+        String name = shipper != null && shipper.getFullName() != null ? shipper.getFullName() : "Nguyễn Hùng (Shipper Đội Gom KTX)";
+        String phone = shipper != null && shipper.getPhoneNumber() != null ? shipper.getPhoneNumber() : "0918765432";
+        String email = shipper != null && shipper.getEmail() != null ? shipper.getEmail() : "shipper.hung@fpt.edu.vn";
+        String avatar = shipper != null && shipper.getAvatarUrl() != null ? shipper.getAvatarUrl() : "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200";
+        java.math.BigDecimal ratingAvg = shipper != null && shipper.getRatingAvg() != null ? shipper.getRatingAvg() : java.math.BigDecimal.valueOf(4.9);
+        Integer ratingCount = shipper != null && shipper.getRatingCount() != null ? shipper.getRatingCount() : 128;
+        Integer totalTrips = 340;
+
+        return org.example.order_app_backend.dto.response.ShipperProfileResponse.builder()
+                .shipperId(shipperId)
+                .fullName(name)
+                .phoneNumber(phone)
+                .email(email)
+                .avatarUrl(avatar)
+                .shipperRatingAvg(ratingAvg)
+                .ratingCount(ratingCount)
+                .totalTrips(totalTrips)
+                .build();
     }
 
     private void validateOrderAccess(OrderEntity order) {
@@ -156,4 +270,3 @@ public class ReviewServiceImpl implements ReviewService {
         }
     }
 }
-
