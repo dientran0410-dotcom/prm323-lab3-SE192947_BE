@@ -18,6 +18,7 @@ public enum ErrorCode {
     // User / Auth
     USER_NOT_FOUND("USER_NOT_FOUND", "Không tìm thấy người dùng", HttpStatus.NOT_FOUND),
     USER_ALREADY_EXISTS("USER_ALREADY_EXISTS", "Người dùng đã tồn tại trong hệ thống", HttpStatus.CONFLICT),
+    USER_BANNED("USER_BANNED", "Tài khoản của bạn đã bị khóa do vi phạm chính sách", HttpStatus.FORBIDDEN),
 
     // Store & Menu
     STORE_NOT_FOUND("STORE_NOT_FOUND", "Không tìm thấy thông tin quán ăn", HttpStatus.NOT_FOUND),

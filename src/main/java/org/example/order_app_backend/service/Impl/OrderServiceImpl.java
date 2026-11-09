@@ -139,6 +139,13 @@ public class OrderServiceImpl implements OrderService {
             currentUserId = 1L; // Fallback mặc định cho dev / demo
         }
 
+        // BR-USR-01: Kiểm tra tài khoản người dùng có bị khóa hay không
+        UserEntity currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        if (Boolean.TRUE.equals(currentUser.getIsBanned())) {
+            throw new AppException(ErrorCode.USER_BANNED);
+        }
+
         // BR-ORD-05: Sinh mã đơn, mã QR đối soát và mã PIN 4 số
         String orderCode = generateOrderCode();
         String pickupQrCode = "QR_KTX_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();

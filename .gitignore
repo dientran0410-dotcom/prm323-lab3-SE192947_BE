@@ -35,3 +35,5 @@ build/
 # H2 local database storage
 data/
 *.db
+
+.env
