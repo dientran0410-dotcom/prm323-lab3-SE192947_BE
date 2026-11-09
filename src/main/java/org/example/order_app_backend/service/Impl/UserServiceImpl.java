@@ -27,6 +27,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final CurrentUserProvider currentUserProvider;
+    private final org.example.order_app_backend.service.OtpService otpService;
 
     @Override
     @Transactional
@@ -134,6 +135,43 @@ public class UserServiceImpl implements UserService {
         userMapper.updateEntityFromRequest(user, request);
         UserEntity saved = userRepository.save(user);
         log.info("Cập nhật thành công hồ sơ người dùng ID: {}", saved.getId());
+        return userMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse resetPassword(org.example.order_app_backend.dto.request.ResetPasswordRequest request) {
+        String cleanPhone = request.getPhoneNumber().replaceAll("[^0-9]", "").trim();
+        log.info("Bắt đầu xử lý đặt lại mật khẩu cho số điện thoại: {}", cleanPhone);
+
+        // 1. Xác thực mã OTP
+        boolean isOtpValid = otpService.verifyOtp(cleanPhone, request.getOtp());
+        if (!isOtpValid) {
+            log.warn("Xác thực OTP thất bại cho số điện thoại: {}, mã nhập: {}", cleanPhone, request.getOtp());
+            throw new AppException(ErrorCode.INVALID_OTP, "Mã xác thực OTP không chính xác hoặc đã hết hạn. Vui lòng kiểm tra lại terminal hoặc gửi lại mã mới.");
+        }
+
+        // 2. Tìm người dùng theo số điện thoại
+        UserEntity user = userRepository.findByPhone(cleanPhone)
+                .or(() -> userRepository.findByEmail(cleanPhone))
+                .orElse(null);
+
+        if (user == null) {
+            // Nếu là số điện thoại mới chưa có trong hệ thống, tự động tạo tài khoản sinh viên demo
+            user = UserEntity.builder()
+                    .phone(cleanPhone)
+                    .email(cleanPhone + "@student.fpt.edu.vn")
+                    .displayName("Sinh viên KTX (" + (cleanPhone.length() >= 4 ? cleanPhone.substring(cleanPhone.length() - 4) : cleanPhone) + ")")
+                    .role(org.example.order_app_backend.entity.UserRole.STUDENT)
+                    .password(request.getNewPassword().trim())
+                    .build();
+            log.info("Tạo mới tài khoản sinh viên với mật khẩu mới cho SĐT: {}", cleanPhone);
+        } else {
+            user.setPassword(request.getNewPassword().trim());
+            log.info("Cập nhật mật khẩu mới thành công cho người dùng ID: {}, SĐT: {}", user.getId(), cleanPhone);
+        }
+
+        UserEntity saved = userRepository.save(user);
         return userMapper.toResponse(saved);
     }
 }

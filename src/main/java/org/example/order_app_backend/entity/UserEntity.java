@@ -34,6 +34,9 @@ public class UserEntity {
     @Column(name = "phone", unique = true, length = 20)
     private String phone;
 
+    @Column(name = "password", length = 100)
+    private String password;
+
     @Column(name = "display_name", nullable = false, length = 100)
     private String displayName;
 

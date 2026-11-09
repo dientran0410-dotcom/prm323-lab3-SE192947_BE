@@ -16,4 +16,6 @@ public interface UserService {
     UserResponse getUserById(Long id);
 
     UserResponse updateProfile(UpdateUserProfileRequest request);
+
+    UserResponse resetPassword(org.example.order_app_backend.dto.request.ResetPasswordRequest request);
 }
