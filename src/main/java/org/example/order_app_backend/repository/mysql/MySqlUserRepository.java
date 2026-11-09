@@ -24,6 +24,11 @@ public class MySqlUserRepository implements UserRepository {
     }
 
     @Override
+    public List<UserEntity> findAll() {
+        return jpaRepository.findAll();
+    }
+
+    @Override
     public Optional<UserEntity> findById(Long id) {
         return jpaRepository.findById(id);
     }

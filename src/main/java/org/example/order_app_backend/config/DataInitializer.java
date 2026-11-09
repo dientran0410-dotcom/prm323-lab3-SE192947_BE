@@ -105,7 +105,7 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void initStoresAndMenus() {
-        if (storeRepository.findByName("Cơm Tấm Cô Ba - KTX Khu B").isEmpty()) {
+        if (storeRepository.findAll().stream().noneMatch(s -> "Cơm Tấm Cô Ba - KTX Khu B".equals(s.getName()))) {
             log.info("Khởi tạo danh sách Quán ăn KTX & Thực đơn món...");
 
             UserEntity cobaOwner = userRepository.findByEmail("coba.owner@fpt.edu.vn").orElse(null);
@@ -134,7 +134,7 @@ public class DataInitializer implements ApplicationRunner {
                     .imageUrl("https://images.unsplash.com/photo-1544025162-d76694265947")
                     .category("COM")
                     .isAvailable(true)
-                    .optionsJson("[{\"name\":\"Kích cỡ\",\"required\":true,\"choices\":[{\"name\":\"Phần vừa\",\"extraPrice\":0},{\"name\":\"Phần lớn (+Cơm)\",\"extraPrice\":5000}]},{\"name\":\"Topping thêm\",\"required\":false,\"choices\":[{\"name\":\"Trứng ốp la lòng đào\",\"extraPrice\":5000},{\"name\":\"Chả trứng hấp\",\"extraPrice\":6000},{\"name\":\"Canh khổ qua dồn thịt\",\"extraPrice\":10000}]}]")
+                    .customizationOptions("[{\"name\":\"Kích cỡ\",\"required\":true,\"choices\":[{\"name\":\"Phần vừa\",\"extraPrice\":0},{\"name\":\"Phần lớn (+Cơm)\",\"extraPrice\":5000}]},{\"name\":\"Topping thêm\",\"required\":false,\"choices\":[{\"name\":\"Trứng ốp la lòng đào\",\"extraPrice\":5000},{\"name\":\"Chả trứng hấp\",\"extraPrice\":6000},{\"name\":\"Canh khổ qua dồn thịt\",\"extraPrice\":10000}]}]")
                     .build());
 
             menuItemRepository.save(MenuItemEntity.builder()
@@ -145,7 +145,7 @@ public class DataInitializer implements ApplicationRunner {
                     .imageUrl("https://images.unsplash.com/photo-1555396273-367ea4eb4db5")
                     .category("COM")
                     .isAvailable(true)
-                    .optionsJson("[{\"name\":\"Kích cỡ\",\"required\":true,\"choices\":[{\"name\":\"Suất đặc biệt\",\"extraPrice\":0}]},{\"name\":\"Độ chín trứng\",\"required\":false,\"choices\":[{\"name\":\"Trứng lòng đào\",\"extraPrice\":5000},{\"name\":\"Trứng chín kỹ\",\"extraPrice\":5000}]}]")
+                    .customizationOptions("[{\"name\":\"Kích cỡ\",\"required\":true,\"choices\":[{\"name\":\"Suất đặc biệt\",\"extraPrice\":0}]},{\"name\":\"Độ chín trứng\",\"required\":false,\"choices\":[{\"name\":\"Trứng lòng đào\",\"extraPrice\":5000},{\"name\":\"Trứng chín kỹ\",\"extraPrice\":5000}]}]")
                     .build());
 
             menuItemRepository.save(MenuItemEntity.builder()
@@ -156,7 +156,7 @@ public class DataInitializer implements ApplicationRunner {
                     .imageUrl("https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec")
                     .category("COM")
                     .isAvailable(true)
-                    .optionsJson("[{\"name\":\"Chọn canh đi kèm\",\"required\":true,\"choices\":[{\"name\":\"Canh rong biển thịt bằm\",\"extraPrice\":0},{\"name\":\"Canh chua tôm cay\",\"extraPrice\":5000}]}]")
+                    .customizationOptions("[{\"name\":\"Chọn canh đi kèm\",\"required\":true,\"choices\":[{\"name\":\"Canh rong biển thịt bằm\",\"extraPrice\":0},{\"name\":\"Canh chua tôm cay\",\"extraPrice\":5000}]}]")
                     .build());
 
             // Quán 2: Trà Sữa & Cà Phê KTX
@@ -181,7 +181,7 @@ public class DataInitializer implements ApplicationRunner {
                     .imageUrl("https://images.unsplash.com/photo-1558857563-b37cf5a31a19")
                     .category("DOUONG")
                     .isAvailable(true)
-                    .optionsJson("[{\"name\":\"Mức đường\",\"required\":true,\"choices\":[{\"name\":\"100% đường\",\"extraPrice\":0},{\"name\":\"70% đường\",\"extraPrice\":0},{\"name\":\"50% đường (Vừa)\",\"extraPrice\":0},{\"name\":\"30% đường\",\"extraPrice\":0}]},{\"name\":\"Topping\",\"required\":false,\"choices\":[{\"name\":\"Thêm trân châu đen\",\"extraPrice\":5000},{\"name\":\"Thạch củ năng\",\"extraPrice\":6000},{\"name\":\"Kem cheese macchiato\",\"extraPrice\":8000}]}]")
+                    .customizationOptions("[{\"name\":\"Mức đường\",\"required\":true,\"choices\":[{\"name\":\"100% đường\",\"extraPrice\":0},{\"name\":\"70% đường\",\"extraPrice\":0},{\"name\":\"50% đường (Vừa)\",\"extraPrice\":0},{\"name\":\"30% đường\",\"extraPrice\":0}]},{\"name\":\"Topping\",\"required\":false,\"choices\":[{\"name\":\"Thêm trân châu đen\",\"extraPrice\":5000},{\"name\":\"Thạch củ năng\",\"extraPrice\":6000},{\"name\":\"Kem cheese macchiato\",\"extraPrice\":8000}]}]")
                     .build());
 
             menuItemRepository.save(MenuItemEntity.builder()
@@ -192,7 +192,7 @@ public class DataInitializer implements ApplicationRunner {
                     .imageUrl("https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd")
                     .category("DOUONG")
                     .isAvailable(true)
-                    .optionsJson("[{\"name\":\"Đá/Nóng\",\"required\":true,\"choices\":[{\"name\":\"Cà phê đá\",\"extraPrice\":0},{\"name\":\"Cà phê nóng\",\"extraPrice\":0}]}]")
+                    .customizationOptions("[{\"name\":\"Đá/Nóng\",\"required\":true,\"choices\":[{\"name\":\"Cà phê đá\",\"extraPrice\":0},{\"name\":\"Cà phê nóng\",\"extraPrice\":0}]}]")
                     .build());
 
             // Quán 3: Bánh Mì Chảo KTX Khu A
@@ -217,7 +217,7 @@ public class DataInitializer implements ApplicationRunner {
                     .imageUrl("https://images.unsplash.com/photo-1509722747041-616f39b57569")
                     .category("BANHMI")
                     .isAvailable(true)
-                    .optionsJson("[{\"name\":\"Kèm thêm\",\"required\":false,\"choices\":[{\"name\":\"Bánh mì thêm (1 ổ)\",\"extraPrice\":5000},{\"name\":\"Xúc xích Đức nướng\",\"extraPrice\":8000}]}]")
+                    .customizationOptions("[{\"name\":\"Kèm thêm\",\"required\":false,\"choices\":[{\"name\":\"Bánh mì thêm (1 ổ)\",\"extraPrice\":5000},{\"name\":\"Xúc xích Đức nướng\",\"extraPrice\":8000}]}]")
                     .build());
 
             log.info("Khởi tạo hoàn tất 3 quán ăn và các món kèm Topping optionsJson!");
@@ -227,9 +227,10 @@ public class DataInitializer implements ApplicationRunner {
     private void initSampleOrdersAndDisputes() {
         UserEntity student = userRepository.findByEmail("student@fpt.edu.vn").orElse(null);
         UserEntity shipper = userRepository.findByEmail("shipper.hung@fpt.edu.vn").orElse(null);
-        StoreEntity storeCoBa = storeRepository.findByName("Cơm Tấm Cô Ba - KTX Khu B").orElse(null);
-        StoreEntity storeTraSua = storeRepository.findByName("Trà Sữa Sinh Viên & Cà Phê Muối KTX").orElse(null);
-        StoreEntity storeBanhMi = storeRepository.findByName("Bánh Mì Chảo & Xôi Mặn KTX Khu A").orElse(null);
+        List<StoreEntity> allStores = storeRepository.findAll();
+        StoreEntity storeCoBa = allStores.stream().filter(s -> "Cơm Tấm Cô Ba - KTX Khu B".equals(s.getName())).findFirst().orElse(null);
+        StoreEntity storeTraSua = allStores.stream().filter(s -> "Trà Sữa Sinh Viên & Cà Phê Muối KTX".equals(s.getName())).findFirst().orElse(null);
+        StoreEntity storeBanhMi = allStores.stream().filter(s -> "Bánh Mì Chảo & Xôi Mặn KTX Khu A".equals(s.getName())).findFirst().orElse(null);
 
         if (student == null || storeCoBa == null || storeTraSua == null || storeBanhMi == null) {
             return;

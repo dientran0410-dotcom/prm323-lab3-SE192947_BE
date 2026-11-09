@@ -12,6 +12,8 @@ public interface UserRepository {
 
     Optional<UserEntity> findById(Long id);
 
+    List<UserEntity> findAll();
+
     Optional<UserEntity> findByFirebaseUid(String firebaseUid);
 
     Optional<UserEntity> findByEmail(String email);

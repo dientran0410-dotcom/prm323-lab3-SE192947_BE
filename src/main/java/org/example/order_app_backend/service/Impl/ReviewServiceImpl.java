@@ -241,8 +241,8 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional(readOnly = true)
     public org.example.order_app_backend.dto.response.ShipperProfileResponse getShipperProfile(Long shipperId) {
         UserEntity shipper = userRepository.findById(shipperId).orElse(null);
-        String name = shipper != null && shipper.getFullName() != null ? shipper.getFullName() : "Nguyễn Hùng (Shipper Đội Gom KTX)";
-        String phone = shipper != null && shipper.getPhoneNumber() != null ? shipper.getPhoneNumber() : "0918765432";
+        String name = shipper != null && shipper.getDisplayName() != null ? shipper.getDisplayName() : "Nguyễn Hùng (Shipper Đội Gom KTX)";
+        String phone = shipper != null && shipper.getPhone() != null ? shipper.getPhone() : "0918765432";
         String email = shipper != null && shipper.getEmail() != null ? shipper.getEmail() : "shipper.hung@fpt.edu.vn";
         String avatar = shipper != null && shipper.getAvatarUrl() != null ? shipper.getAvatarUrl() : "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200";
         java.math.BigDecimal ratingAvg = shipper != null && shipper.getRatingAvg() != null ? shipper.getRatingAvg() : java.math.BigDecimal.valueOf(4.9);
