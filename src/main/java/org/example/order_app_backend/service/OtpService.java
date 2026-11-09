@@ -96,3 +96,4 @@ public class OtpService {
         return phone.replaceAll("[^0-9]", "").trim();
     }
 }
+

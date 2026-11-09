@@ -16,3 +16,4 @@ public class OtpResponse {
     private Integer expiresInSeconds;
     private String message;
 }
+

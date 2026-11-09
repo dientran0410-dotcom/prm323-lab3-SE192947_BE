@@ -15,3 +15,4 @@ public class SendOtpRequest {
     @NotBlank(message = "Số điện thoại không được để trống")
     private String phoneNumber;
 }
+
