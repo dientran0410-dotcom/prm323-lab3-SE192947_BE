@@ -40,7 +40,7 @@ public class DataInitializer implements ApplicationRunner {
             userRepository.save(UserEntity.builder()
                     .firebaseUid("student_mock_uid")
                     .email("student@fpt.edu.vn")
-                    .phone("0981234567")
+                    .phone("0968097907")
                     .displayName("Ngô Trường Đạt (Sinh viên)")
                     .role(UserRole.STUDENT)
                     .avatarUrl("https://images.unsplash.com/photo-1534528741775-53994a69daeb")
@@ -102,6 +102,14 @@ public class DataInitializer implements ApplicationRunner {
                     .ktxRoom("508")
                     .build());
         }
+
+        // Cập nhật SĐT mới nhất cho Student 1 (Ngô Trường Đạt)
+        userRepository.findByEmail("student@fpt.edu.vn").ifPresent(user -> {
+            if (!"0968097907".equals(user.getPhone())) {
+                user.setPhone("0968097907");
+                userRepository.save(user);
+            }
+        });
     }
 
     private void initStoresAndMenus() {

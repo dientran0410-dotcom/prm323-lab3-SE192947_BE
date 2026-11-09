@@ -85,7 +85,7 @@ public class StoreOwnerServiceImpl implements StoreOwnerService {
                     .id(order.getId())
                     .orderCode(order.getOrderCode())
                     .customerName(customer != null ? customer.getDisplayName() : "Sinh viên KTX")
-                    .customerPhone(customer != null ? customer.getPhone() : "0981234567")
+                    .customerPhone(customer != null ? customer.getPhone() : "0968097907")
                     .slotTime(order.getSlotTime())
                     .pickupLocation(order.getPickupLocation())
                     .finalAmount(order.getFinalAmount())

@@ -67,7 +67,7 @@ public class ShipperServiceImpl implements ShipperService {
                     .storeAddress(store != null ? store.getAddress() : "Cổng B2 ĐHQG")
                     .pickupLocation(order.getPickupLocation())
                     .customerName(customer != null ? customer.getDisplayName() : "Sinh viên KTX")
-                    .customerPhone(customer != null ? customer.getPhone() : "0981234567")
+                    .customerPhone(customer != null ? customer.getPhone() : "0968097907")
                     .paymentMethod(order.getPaymentMethod() != null ? order.getPaymentMethod().name() : "VIETQR")
                     .finalAmount(order.getFinalAmount())
                     .status(order.getStatus())
