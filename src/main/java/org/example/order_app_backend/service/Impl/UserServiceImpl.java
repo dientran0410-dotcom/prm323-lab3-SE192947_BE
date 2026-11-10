@@ -13,9 +13,11 @@ import org.example.order_app_backend.exception.ResourceNotFoundException;
 import org.example.order_app_backend.mapper.UserMapper;
 import org.example.order_app_backend.repository.UserRepository;
 import org.example.order_app_backend.security.CurrentUserProvider;
+import org.example.order_app_backend.service.StorageService;
 import org.example.order_app_backend.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 
@@ -28,6 +30,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final CurrentUserProvider currentUserProvider;
     private final org.example.order_app_backend.service.OtpService otpService;
+    private final StorageService storageService;
 
     @Override
     @Transactional
@@ -77,11 +80,9 @@ public class UserServiceImpl implements UserService {
         return userMapper.toResponse(user);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserResponse getCurrentUserProfile() {
+    private UserEntity getAuthenticatedUserEntity() {
         if (!currentUserProvider.isAuthenticated()) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Bạn cần đăng nhập để truy cập thông tin cá nhân");
+            throw new AppException(ErrorCode.UNAUTHORIZED, "Bạn cần đăng nhập để thực hiện thao tác này");
         }
 
         Long userId = currentUserProvider.getCurrentUserId();
@@ -98,8 +99,13 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new ResourceNotFoundException("Không tìm thấy thông tin hồ sơ của người dùng hiện tại");
         }
+        return user;
+    }
 
-        return userMapper.toResponse(user);
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUserProfile() {
+        return userMapper.toResponse(getAuthenticatedUserEntity());
     }
 
     @Override
@@ -113,28 +119,107 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse updateProfile(UpdateUserProfileRequest request) {
-        if (!currentUserProvider.isAuthenticated()) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Bạn cần đăng nhập để cập nhật thông tin cá nhân");
-        }
-
-        Long userId = currentUserProvider.getCurrentUserId();
-        String firebaseUid = currentUserProvider.getCurrentUserFirebaseUid();
-
-        UserEntity user = null;
-        if (userId != null) {
-            user = userRepository.findById(userId).orElse(null);
-        }
-        if (user == null && firebaseUid != null) {
-            user = userRepository.findByFirebaseUid(firebaseUid).orElse(null);
-        }
-
-        if (user == null) {
-            throw new ResourceNotFoundException("Không tìm thấy người dùng để cập nhật thông tin");
-        }
-
+        UserEntity user = getAuthenticatedUserEntity();
         userMapper.updateEntityFromRequest(user, request);
         UserEntity saved = userRepository.save(user);
         log.info("Cập nhật thành công hồ sơ người dùng ID: {}", saved.getId());
+        return userMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse uploadAvatar(MultipartFile file) {
+        UserEntity user = getAuthenticatedUserEntity();
+        String oldAvatarUrl = user.getAvatarUrl();
+
+        String newAvatarUrl = storageService.uploadAvatar(file, user.getId());
+        user.setAvatarUrl(newAvatarUrl);
+        UserEntity saved = userRepository.save(user);
+
+        if (oldAvatarUrl != null && !oldAvatarUrl.isBlank() && !oldAvatarUrl.equals(newAvatarUrl)) {
+            storageService.deleteAvatar(oldAvatarUrl);
+        }
+
+        log.info("Cập nhật avatar thành công cho user ID: {}, URL: {}", saved.getId(), newAvatarUrl);
+        return userMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getAvatarUrl() {
+        UserEntity user = getAuthenticatedUserEntity();
+        return user.getAvatarUrl();
+    }
+
+    @Override
+    @Transactional
+    public UserResponse updateAvatarUrl(String avatarUrl) {
+        UserEntity user = getAuthenticatedUserEntity();
+        String oldAvatarUrl = user.getAvatarUrl();
+
+        String updatedUrl = (avatarUrl != null && !avatarUrl.isBlank()) ? avatarUrl.trim() : null;
+        user.setAvatarUrl(updatedUrl);
+        UserEntity saved = userRepository.save(user);
+
+        if (updatedUrl == null && oldAvatarUrl != null && !oldAvatarUrl.isBlank()) {
+            storageService.deleteAvatar(oldAvatarUrl);
+        }
+
+        log.info("Cập nhật avatar URL trực tiếp cho user ID: {}, URL: {}", saved.getId(), updatedUrl);
+        return userMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse deleteAvatar() {
+        UserEntity user = getAuthenticatedUserEntity();
+        String oldAvatarUrl = user.getAvatarUrl();
+
+        user.setAvatarUrl(null);
+        UserEntity saved = userRepository.save(user);
+
+        if (oldAvatarUrl != null && !oldAvatarUrl.isBlank()) {
+            storageService.deleteAvatar(oldAvatarUrl);
+        }
+
+        log.info("Xóa avatar thành công cho user ID: {}", saved.getId());
+        return userMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse uploadUserAvatar(Long userId, MultipartFile file) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + userId));
+
+        String oldAvatarUrl = user.getAvatarUrl();
+        String newAvatarUrl = storageService.uploadAvatar(file, user.getId());
+        user.setAvatarUrl(newAvatarUrl);
+        UserEntity saved = userRepository.save(user);
+
+        if (oldAvatarUrl != null && !oldAvatarUrl.isBlank() && !oldAvatarUrl.equals(newAvatarUrl)) {
+            storageService.deleteAvatar(oldAvatarUrl);
+        }
+
+        log.info("Quản trị viên tải lên avatar thành công cho user ID: {}, URL: {}", saved.getId(), newAvatarUrl);
+        return userMapper.toResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    public UserResponse deleteUserAvatar(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + userId));
+
+        String oldAvatarUrl = user.getAvatarUrl();
+        user.setAvatarUrl(null);
+        UserEntity saved = userRepository.save(user);
+
+        if (oldAvatarUrl != null && !oldAvatarUrl.isBlank()) {
+            storageService.deleteAvatar(oldAvatarUrl);
+        }
+
+        log.info("Quản trị viên xóa avatar cho user ID: {}", saved.getId());
         return userMapper.toResponse(saved);
     }
 

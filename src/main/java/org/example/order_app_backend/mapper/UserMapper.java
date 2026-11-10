@@ -78,8 +78,8 @@ public class UserMapper {
         if (request.getPhone() != null && !request.getPhone().isBlank()) {
             entity.setPhone(request.getPhone().trim());
         }
-        if (request.getAvatarUrl() != null && !request.getAvatarUrl().isBlank()) {
-            entity.setAvatarUrl(request.getAvatarUrl());
+        if (request.getAvatarUrl() != null) {
+            entity.setAvatarUrl(request.getAvatarUrl().isBlank() ? null : request.getAvatarUrl().trim());
         }
         if (request.getKtxBuilding() != null && !request.getKtxBuilding().isBlank()) {
             entity.setKtxBuilding(request.getKtxBuilding().trim());

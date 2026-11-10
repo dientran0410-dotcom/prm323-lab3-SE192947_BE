@@ -9,8 +9,11 @@ import org.example.order_app_backend.dto.response.DisputeResponse;
 import org.example.order_app_backend.dto.response.OrderResponse;
 import org.example.order_app_backend.dto.response.UserResponse;
 import org.example.order_app_backend.service.AdminService;
+import org.example.order_app_backend.service.UserService;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,6 +24,7 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final UserService userService;
 
     @GetMapping("/orders")
     @Operation(summary = "Lấy tất cả đơn hàng gom ca trên hệ thống", description = "Quản trị viên giám sát toàn bộ đơn hàng gom ca ở tất cả các tòa KTX")
@@ -67,5 +71,22 @@ public class AdminController {
         UserResponse response = adminService.toggleUserBan(id, banned);
         String actionMsg = Boolean.TRUE.equals(response.getIsBanned()) ? "Đã khóa tài khoản người dùng thành công" : "Đã mở khóa tài khoản người dùng thành công";
         return ResponseEntity.ok(ApiResponse.success(actionMsg, response));
+    }
+
+    @PostMapping(value = "/users/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Quản trị viên tải lên ảnh đại diện cho người dùng", description = "Admin cập nhật ảnh đại diện cho bất kỳ tài khoản nào")
+    public ResponseEntity<ApiResponse<UserResponse>> uploadUserAvatar(
+            @PathVariable("id") Long id,
+            @RequestParam("file") MultipartFile file) {
+        UserResponse response = userService.uploadUserAvatar(id, file);
+        return ResponseEntity.ok(ApiResponse.success("Quản trị viên tải lên ảnh đại diện người dùng thành công", response));
+    }
+
+    @DeleteMapping("/users/{id}/avatar")
+    @Operation(summary = "Quản trị viên xóa ảnh đại diện của người dùng", description = "Admin đặt lại ảnh đại diện của người dùng về null")
+    public ResponseEntity<ApiResponse<UserResponse>> deleteUserAvatar(
+            @PathVariable("id") Long id) {
+        UserResponse response = userService.deleteUserAvatar(id);
+        return ResponseEntity.ok(ApiResponse.success("Quản trị viên xóa ảnh đại diện người dùng thành công", response));
     }
 }

@@ -36,6 +36,9 @@ class UserServiceTest {
     @Mock
     private CurrentUserProvider currentUserProvider;
 
+    @Mock
+    private StorageService storageService;
+
     @Spy
     private UserMapper userMapper = new UserMapper();
 

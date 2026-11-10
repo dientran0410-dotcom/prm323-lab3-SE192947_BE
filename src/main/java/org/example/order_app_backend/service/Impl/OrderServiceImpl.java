@@ -328,19 +328,10 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // Không cho phép xác nhận nếu đơn hàng đã bị hủy
-        if (order.getStatus() == OrderStatus.CANCELLED) {
-            log.warn("Đơn hàng ID {} đã bị hủy, không thể xác nhận nhận hàng", orderId);
+        // BR-ORD-05: Đơn hàng phải ở trạng thái DELIVERING mới có thể xác nhận nhận hàng
+        if (order.getStatus() != OrderStatus.DELIVERING) {
+            log.warn("Đơn hàng ID {} ở trạng thái {} không thể xác nhận nhận hàng (yêu cầu DELIVERING)", orderId, order.getStatus());
             throw new AppException(ErrorCode.INVALID_ORDER_STATUS);
-        }
-
-        // Nếu đã hoàn tất thì trả về luôn (idempotent)
-        if (order.getStatus() == OrderStatus.DELIVERED) {
-            return org.example.order_app_backend.dto.response.PickupConfirmationResponse.builder()
-                    .orderId(order.getId())
-                    .status(order.getStatus())
-                    .deliveredAt(order.getDeliveredAt())
-                    .build();
         }
 
         // BR-ORD-05: Kiểm tra mã đối soát QR hoặc PIN

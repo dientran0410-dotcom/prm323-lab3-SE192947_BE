@@ -12,6 +12,7 @@ import org.example.order_app_backend.repository.MenuItemRepository;
 import org.example.order_app_backend.repository.OrderItemRepository;
 import org.example.order_app_backend.repository.OrderRepository;
 import org.example.order_app_backend.repository.StoreRepository;
+import org.example.order_app_backend.repository.UserRepository;
 import org.example.order_app_backend.security.CurrentUserProvider;
 import org.example.order_app_backend.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +51,9 @@ class OrderServiceTest {
     private MenuItemRepository menuItemRepository;
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private CurrentUserProvider currentUserProvider;
 
     @Spy
@@ -59,6 +64,7 @@ class OrderServiceTest {
 
     private StoreEntity testStore;
     private MenuItemEntity testItem;
+    private UserEntity testUser;
 
     @BeforeEach
     void setUp() {
@@ -76,12 +82,21 @@ class OrderServiceTest {
                 .basePrice(BigDecimal.valueOf(35000.00))
                 .isAvailable(true)
                 .build();
+
+        testUser = UserEntity.builder()
+                .id(1L)
+                .displayName("Nguyen Van A")
+                .email("student@fpt.edu.vn")
+                .role(UserRole.STUDENT)
+                .isBanned(false)
+                .build();
     }
 
     @Test
     @DisplayName("createOrder: Tạo đơn thành công với Price Snapshot và phí ship gom đơn KTX")
     void createOrder_Success() {
         when(currentUserProvider.getCurrentUserId()).thenReturn(1L);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(testUser));
         when(storeRepository.findById(1L)).thenReturn(Optional.of(testStore));
         when(menuItemRepository.findByIdIn(List.of(101L))).thenReturn(List.of(testItem));
 

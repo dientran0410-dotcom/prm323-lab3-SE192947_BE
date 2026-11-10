@@ -9,6 +9,7 @@ public enum ErrorCode {
     // Hệ thống & Chung
     UNCATEGORIZED_EXCEPTION("INTERNAL_ERROR", "Lỗi máy chủ không xác định", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_KEY("INVALID_KEY", "Khóa định danh không hợp lệ", HttpStatus.BAD_REQUEST),
+    INVALID_REQUEST("INVALID_REQUEST", "Yêu cầu không hợp lệ hoặc định dạng tập tin không được hỗ trợ", HttpStatus.BAD_REQUEST),
     VALIDATION_FAILED("VALIDATION_FAILED", "Dữ liệu yêu cầu không hợp lệ", HttpStatus.BAD_REQUEST),
     NOT_FOUND("RESOURCE_NOT_FOUND", "Không tìm thấy tài nguyên yêu cầu", HttpStatus.NOT_FOUND),
     UNAUTHORIZED("UNAUTHORIZED", "Chưa xác thực danh tính", HttpStatus.UNAUTHORIZED),
