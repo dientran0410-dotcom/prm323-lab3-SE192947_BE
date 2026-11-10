@@ -27,13 +27,39 @@ public class OtpService {
 
         otpStorage.put(cleanPhone, new OtpEntry(otp, expiresAt));
 
-        // In ra Terminal theo định dạng cực kỳ nổi bật để người dùng dễ nhìn thấy
-        System.out.println("\n" + "=".repeat(75));
-        System.out.println("📱 [SMS-GATEWAY-MOCK] ĐÃ GỬI MÃ OTP XÁC THỰC TỚI SỐ: " + cleanPhone);
-        System.out.println("💬 NỘI DUNG TIN NHẮN: \"Ma OTP KTX Food cua ban la: " + otp + ". Co hieu luc trong 5 phut.\"");
-        System.out.println("🔐 MÃ OTP CẦN ĐIỀN VÀO APP: >>> " + otp + " <<<");
-        System.out.println("⏳ THỜI GIAN HẾT HẠN: " + expiresAt);
-        System.out.println("=".repeat(75) + "\n");
+        // In ra Terminal theo định dạng cực kỳ nổi bật để người dùng trên VPS nhìn thấy ngay lập tức
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println("🔥🔥🔥 [KTX-FOOD-OTP] MÃ XÁC THỰC OTP ĐỔI MẬT KHẨU CHO SĐT: " + cleanPhone + " 🔥🔥🔥");
+        System.out.println("👉 MÃ OTP CỦA BẠN LÀ:        >>>  " + otp + "  <<<");
+        System.out.println("👉 THỜI GIAN CÓ HIỆU LỰC:   5 PHÚT (Hết hạn lúc: " + expiresAt + ")");
+        System.out.println("💡 GỢI Ý TEST NHANH:         App cũng chấp nhận mã mặc định '123456'");
+        System.out.println("=".repeat(80) + "\n");
+
+        // Ghi ra file latest_otp.txt để các script trên VPS đọc liền tức thì
+        try {
+            String otpLog = String.format("[%s] SĐT: %s | MÃ OTP: %s | HẾT HẠN: %s%n",
+                    java.time.LocalDateTime.now(), cleanPhone, otp, expiresAt);
+            java.nio.file.Files.writeString(
+                    java.nio.file.Path.of("latest_otp.txt"),
+                    otpLog,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+            java.nio.file.Files.writeString(
+                    java.nio.file.Path.of("otp_history.log"),
+                    otpLog,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.APPEND);
+            // Thử ghi vào /tmp/latest_otp.txt nếu chạy trên Linux VPS
+            try {
+                java.nio.file.Files.writeString(
+                        java.nio.file.Path.of("/tmp/latest_otp.txt"),
+                        otpLog,
+                        java.nio.file.StandardOpenOption.CREATE,
+                        java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+            } catch (Exception ignored) {}
+        } catch (Exception e) {
+            log.warn("Không thể ghi file latest_otp.txt: {}", e.getMessage());
+        }
 
         log.info("Đã tạo mã OTP cho SĐT: {} (OTP: {})", cleanPhone, otp);
         return otp;
