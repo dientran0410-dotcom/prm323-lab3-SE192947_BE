@@ -180,6 +180,22 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItemEntity> savedItems = orderItemRepository.saveAll(orderItems);
 
         log.info("Tạo đơn hàng thành công với orderCode: {}, finalAmount: {}", savedOrder.getOrderCode(), savedOrder.getFinalAmount());
+
+        try {
+            if (notificationRepository != null) {
+                notificationRepository.save(NotificationEntity.builder()
+                        .userId(savedOrder.getUserId())
+                        .title("🎉 Đặt đơn thành công!")
+                        .body("Đơn hàng #" + savedOrder.getOrderCode() + " từ " + store.getName() + " đã được gửi tới quán.")
+                        .type(NotificationType.ORDER_STATUS)
+                        .dataPayload(String.valueOf(savedOrder.getId()))
+                        .isRead(false)
+                        .build());
+            }
+        } catch (Exception e) {
+            log.warn("Không thể lưu notification cho đơn mới: {}", e.getMessage());
+        }
+
         return orderMapper.toResponse(savedOrder, savedItems, store.getName());
     }
 
@@ -269,6 +285,21 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.CANCELLED);
         OrderEntity savedOrder = orderRepository.save(order);
 
+        try {
+            if (notificationRepository != null) {
+                notificationRepository.save(NotificationEntity.builder()
+                        .userId(savedOrder.getUserId())
+                        .title("❌ Đơn hàng đã bị hủy")
+                        .body("Đơn hàng #" + savedOrder.getOrderCode() + " đã được hủy thành công.")
+                        .type(NotificationType.ORDER_STATUS)
+                        .dataPayload(String.valueOf(savedOrder.getId()))
+                        .isRead(false)
+                        .build());
+            }
+        } catch (Exception e) {
+            log.warn("Không thể lưu notification cho đơn hủy: {}", e.getMessage());
+        }
+
         List<OrderItemEntity> items = orderItemRepository.findByOrderId(savedOrder.getId());
         String storeName = storeRepository.findById(savedOrder.getStoreId())
                 .map(StoreEntity::getName)
@@ -319,6 +350,39 @@ public class OrderServiceImpl implements OrderService {
                 .map(StoreEntity::getName)
                 .orElse("Quán KTX");
 
+        try {
+            if (notificationRepository != null) {
+                String title = switch (targetStatus) {
+                    case CONFIRMED -> "👨‍🍳 Quán đã xác nhận đơn";
+                    case PREPARING -> "🍳 Quán đang chuẩn bị món";
+                    case READY -> "📦 Đơn đã sẵn sàng giao";
+                    case DELIVERING -> "🛵 Đơn hàng đang được giao";
+                    case DELIVERED -> "✅ Giao hàng thành công!";
+                    case CANCELLED -> "❌ Đơn hàng đã bị hủy";
+                    default -> "📋 Cập nhật đơn hàng";
+                };
+                String body = switch (targetStatus) {
+                    case CONFIRMED -> "Đơn hàng #" + savedOrder.getOrderCode() + " từ " + storeName + " đã được quán nhận.";
+                    case PREPARING -> "Món ăn cho đơn #" + savedOrder.getOrderCode() + " đang được bếp chuẩn bị chu đáo.";
+                    case READY -> "Đơn #" + savedOrder.getOrderCode() + " đã đóng gói xong, chờ shipper gom đến sảnh.";
+                    case DELIVERING -> "Shipper đang mang đơn #" + savedOrder.getOrderCode() + " tới điểm hẹn KTX.";
+                    case DELIVERED -> "Đơn #" + savedOrder.getOrderCode() + " đã giao hoàn tất. Chúc bạn ngon miệng!";
+                    case CANCELLED -> "Đơn hàng #" + savedOrder.getOrderCode() + " đã bị hủy.";
+                    default -> "Trạng thái đơn #" + savedOrder.getOrderCode() + " hiện tại là " + targetStatus;
+                };
+                notificationRepository.save(NotificationEntity.builder()
+                        .userId(savedOrder.getUserId())
+                        .title(title)
+                        .body(body)
+                        .type(NotificationType.ORDER_STATUS)
+                        .dataPayload(String.valueOf(savedOrder.getId()))
+                        .isRead(false)
+                        .build());
+            }
+        } catch (Exception e) {
+            log.warn("Không thể lưu notification khi update status: {}", e.getMessage());
+        }
+
         return orderMapper.toResponse(savedOrder, items, storeName);
     }
 
@@ -366,6 +430,24 @@ public class OrderServiceImpl implements OrderService {
 
         OrderEntity savedOrder = orderRepository.save(order);
         log.info("Xác nhận giao nhận thành công đơn hàng {}", savedOrder.getOrderCode());
+
+        try {
+            if (notificationRepository != null) {
+                String sName = storeRepository.findById(savedOrder.getStoreId())
+                        .map(StoreEntity::getName)
+                        .orElse("Quán KTX");
+                notificationRepository.save(NotificationEntity.builder()
+                        .userId(savedOrder.getUserId())
+                        .title("✅ Nhận hàng thành công!")
+                        .body("Bạn đã nhận thành công đơn #" + savedOrder.getOrderCode() + " từ " + sName + ". Chúc bạn ngon miệng!")
+                        .type(NotificationType.ORDER_STATUS)
+                        .dataPayload(String.valueOf(savedOrder.getId()))
+                        .isRead(false)
+                        .build());
+            }
+        } catch (Exception e) {
+            log.warn("Không thể lưu notification khi confirmPickup: {}", e.getMessage());
+        }
 
         return org.example.order_app_backend.dto.response.PickupConfirmationResponse.builder()
                 .orderId(savedOrder.getId())

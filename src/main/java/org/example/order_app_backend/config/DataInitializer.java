@@ -6,6 +6,7 @@ import org.example.order_app_backend.entity.*;
 import org.example.order_app_backend.repository.*;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -24,6 +25,7 @@ public class DataInitializer implements ApplicationRunner {
     private final OrderItemRepository orderItemRepository;
     private final DisputeRepository disputeRepository;
     private final ReviewRepository reviewRepository;
+    private final NotificationRepository notificationRepository;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -314,7 +316,7 @@ public class DataInitializer implements ApplicationRunner {
         });
 
         // 3. Đơn 3: KTX-ORD-1003 (Đang nấu PREPARING - Trà Sữa)
-        orderRepository.findByOrderCode("KTX-ORD-1003").orElseGet(() -> {
+        OrderEntity order3 = orderRepository.findByOrderCode("KTX-ORD-1003").orElseGet(() -> {
             OrderEntity ord = orderRepository.save(OrderEntity.builder()
                     .orderCode("KTX-ORD-1003")
                     .userId(student.getId())
@@ -437,6 +439,62 @@ public class DataInitializer implements ApplicationRunner {
                         .build());
             }
             log.info("Khởi tạo thành công 2 khiếu nại mẫu thực tế cho Admin & Student!");
+        }
+
+        // Khởi tạo lịch sử thông báo mẫu thực tế cho Sinh viên (S12)
+        if (notificationRepository != null && notificationRepository.findByUserId(student.getId(), PageRequest.of(0, 1)).isEmpty()) {
+            if (order1 != null) {
+                notificationRepository.save(NotificationEntity.builder()
+                        .userId(student.getId())
+                        .title("🚚 Shipper đã tới Cổng KTX!")
+                        .body("Đơn gom #KTX-ORD-1001 từ Cơm Tấm Cô Ba đã tới Bàn số 2 • Cổng B2. Nhấn để mở mã QR / PIN nhận món!")
+                        .type(NotificationType.ORDER_STATUS)
+                        .dataPayload(String.valueOf(order1.getId()))
+                        .isRead(false)
+                        .build());
+            }
+
+            if (order2 != null) {
+                notificationRepository.save(NotificationEntity.builder()
+                        .userId(student.getId())
+                        .title("✅ Đơn hàng #KTX-ORD-1002 đã giao thành công!")
+                        .body("Đơn hàng từ Cơm Tấm Cô Ba đã được giao hoàn tất. Bạn đã nhận được +50 Điểm KTX!")
+                        .type(NotificationType.ORDER_STATUS)
+                        .dataPayload(String.valueOf(order2.getId()))
+                        .isRead(false)
+                        .build());
+
+                notificationRepository.save(NotificationEntity.builder()
+                        .userId(student.getId())
+                        .title("💰 Yêu cầu hoàn tiền khiếu nại đã được xử lý")
+                        .body("Khiếu nại món hỏng cho đơn #KTX-ORD-1002 đã được BQL KTX phê duyệt hoàn 45.000đ về ví sinh viên.")
+                        .type(NotificationType.DISPUTE_UPDATE)
+                        .dataPayload(String.valueOf(order2.getId()))
+                        .isRead(false)
+                        .build());
+            }
+
+            if (order3 != null) {
+                notificationRepository.save(NotificationEntity.builder()
+                        .userId(student.getId())
+                        .title("👨‍🍳 Quán đang chuẩn bị món")
+                        .body("Đơn gom #KTX-ORD-1003 từ Trà Sữa & Cà Phê Muối đang được chế biến cho ca trưa 11h30.")
+                        .type(NotificationType.ORDER_STATUS)
+                        .dataPayload(String.valueOf(order3.getId()))
+                        .isRead(true)
+                        .build());
+            }
+
+            notificationRepository.save(NotificationEntity.builder()
+                    .userId(student.getId())
+                    .title("🎉 Ưu đãi đặt món sinh viên KTX")
+                    .body("Đặt đơn gom theo ca trưa 11h30 và ca chiều 18h00 để nhận ưu đãi phí ship chỉ 5.000đ tận sảnh KTX!")
+                    .type(NotificationType.SYSTEM)
+                    .dataPayload(null)
+                    .isRead(true)
+                    .build());
+
+            log.info("Khởi tạo thành công danh sách thông báo mẫu thực tế cho Sinh viên ID: {}", student.getId());
         }
     }
 }
