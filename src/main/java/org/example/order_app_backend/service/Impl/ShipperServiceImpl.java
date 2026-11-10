@@ -72,6 +72,7 @@ public class ShipperServiceImpl implements ShipperService {
                     .finalAmount(order.getFinalAmount())
                     .status(order.getStatus())
                     .pickupPin(order.getPickupPin())
+                    .pickupQrCode(order.getPickupQrCode())
                     .createdAt(order.getCreatedAt())
                     .build());
         }

@@ -37,6 +37,7 @@ public class ShipperBatchDeliveryResponse {
         private BigDecimal finalAmount;
         private OrderStatus status;
         private String pickupPin;
+        private String pickupQrCode;
         private Instant createdAt;
     }
 }
