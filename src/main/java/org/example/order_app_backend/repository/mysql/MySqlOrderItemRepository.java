@@ -33,6 +33,11 @@ public class MySqlOrderItemRepository implements OrderItemRepository {
     }
 
     @Override
+    public List<OrderItemEntity> findByOrderIdIn(List<Long> orderIds) {
+        return jpaRepository.findByOrderIdIn(orderIds);
+    }
+
+    @Override
     public Optional<OrderItemEntity> findById(Long id) {
         return jpaRepository.findById(id);
     }

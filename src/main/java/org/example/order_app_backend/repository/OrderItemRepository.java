@@ -13,6 +13,8 @@ public interface OrderItemRepository {
 
     List<OrderItemEntity> findByOrderId(Long orderId);
 
+    List<OrderItemEntity> findByOrderIdIn(List<Long> orderIds);
+
     Optional<OrderItemEntity> findById(Long id);
 }
 

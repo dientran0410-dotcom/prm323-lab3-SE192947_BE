@@ -228,12 +228,22 @@ public class OrderServiceImpl implements OrderService {
         } else {
             orders = orderRepository.findByUserIdOrderByCreatedAtDesc(currentUserId);
         }
+
+        if (orders.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> orderIds = orders.stream().map(OrderEntity::getId).toList();
+        Map<Long, List<OrderItemEntity>> itemsByOrderId = orderItemRepository.findByOrderIdIn(orderIds).stream()
+                .collect(Collectors.groupingBy(OrderItemEntity::getOrderId));
+
+        Map<Long, String> storeNames = storeRepository.findAll().stream()
+                .collect(Collectors.toMap(StoreEntity::getId, StoreEntity::getName, (a, b) -> a));
+
         return orders.stream()
                 .map(order -> {
-                    List<OrderItemEntity> items = orderItemRepository.findByOrderId(order.getId());
-                    String storeName = storeRepository.findById(order.getStoreId())
-                            .map(StoreEntity::getName)
-                            .orElse("Quán KTX");
+                    List<OrderItemEntity> items = itemsByOrderId.getOrDefault(order.getId(), List.of());
+                    String storeName = storeNames.getOrDefault(order.getStoreId(), "Quán KTX");
                     return orderMapper.toResponse(order, items, storeName);
                 })
                 .toList();
@@ -247,12 +257,30 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Page<OrderEntity> page = orderRepository.findByUserId(currentUserId, pageable);
-        List<OrderResponse> content = page.getContent().stream()
+        List<OrderEntity> orders = page.getContent();
+        if (orders.isEmpty()) {
+            return PageResponse.<OrderResponse>builder()
+                    .content(List.of())
+                    .pageNumber(page.getNumber())
+                    .pageSize(page.getSize())
+                    .totalElements(page.getTotalElements())
+                    .totalPages(page.getTotalPages())
+                    .isFirst(page.isFirst())
+                    .isLast(page.isLast())
+                    .build();
+        }
+
+        List<Long> orderIds = orders.stream().map(OrderEntity::getId).toList();
+        Map<Long, List<OrderItemEntity>> itemsByOrderId = orderItemRepository.findByOrderIdIn(orderIds).stream()
+                .collect(Collectors.groupingBy(OrderItemEntity::getOrderId));
+
+        Map<Long, String> storeNames = storeRepository.findAll().stream()
+                .collect(Collectors.toMap(StoreEntity::getId, StoreEntity::getName, (a, b) -> a));
+
+        List<OrderResponse> content = orders.stream()
                 .map(order -> {
-                    List<OrderItemEntity> items = orderItemRepository.findByOrderId(order.getId());
-                    String storeName = storeRepository.findById(order.getStoreId())
-                            .map(StoreEntity::getName)
-                            .orElse("Quán KTX");
+                    List<OrderItemEntity> items = itemsByOrderId.getOrDefault(order.getId(), List.of());
+                    String storeName = storeNames.getOrDefault(order.getStoreId(), "Quán KTX");
                     return orderMapper.toResponse(order, items, storeName);
                 })
                 .toList();
