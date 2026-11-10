@@ -285,6 +285,16 @@ public class OrderServiceImpl implements OrderService {
         OrderStatus currentStatus = order.getStatus();
         OrderStatus targetStatus = request.getStatus();
 
+        // Idempotency: nếu đơn hàng đã ở đúng trạng thái yêu cầu thì trả về thành công ngay, tránh lỗi 422
+        if (currentStatus == targetStatus) {
+            log.info("Đơn hàng ID {} đã ở sẵn trạng thái {}, giữ nguyên.", orderId, targetStatus);
+            List<OrderItemEntity> items = orderItemRepository.findByOrderId(order.getId());
+            String storeName = storeRepository.findById(order.getStoreId())
+                    .map(StoreEntity::getName)
+                    .orElse("Quán KTX");
+            return orderMapper.toResponse(order, items, storeName);
+        }
+
         // Không cho phép chuyển từ trạng thái kết thúc (DELIVERED, CANCELLED)
         if (currentStatus == OrderStatus.DELIVERED || currentStatus == OrderStatus.CANCELLED) {
             log.warn("Đơn hàng ID {} đã ở trạng thái kết thúc {}, không thể chuyển sang {}", orderId, currentStatus, targetStatus);
