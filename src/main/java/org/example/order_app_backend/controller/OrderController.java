@@ -97,5 +97,17 @@ public class OrderController {
                 .data(response)
                 .build();
     }
+
+    @PostMapping("/{id}/notify-arrival")
+    @Operation(summary = "Shipper báo đã đến điểm nhận hàng KTX (API-023)", description = "Đánh dấu shipper đã tới điểm hẹn và đẩy thông báo popup cho sinh viên")
+    public ApiResponse<OrderResponse> notifyArrival(@PathVariable Long id) {
+        log.info("API: Shipper báo đã đến nơi cho đơn hàng ID: {}", id);
+        OrderResponse response = orderService.notifyArrival(id);
+        return ApiResponse.<OrderResponse>builder()
+                .success(true)
+                .message("Đã gửi thông báo shipper đến nơi cho sinh viên")
+                .data(response)
+                .build();
+    }
 }
 

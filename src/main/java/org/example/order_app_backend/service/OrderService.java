@@ -22,5 +22,7 @@ public interface OrderService {
     OrderResponse updateOrderStatus(Long orderId, org.example.order_app_backend.dto.request.UpdateOrderStatusRequest request);
 
     org.example.order_app_backend.dto.response.PickupConfirmationResponse confirmPickup(Long orderId, org.example.order_app_backend.dto.request.ConfirmPickupRequest request);
+
+    OrderResponse notifyArrival(Long orderId);
 }
 

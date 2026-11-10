@@ -12,11 +12,13 @@ import org.example.order_app_backend.exception.AppException;
 import org.example.order_app_backend.exception.ErrorCode;
 import org.example.order_app_backend.mapper.OrderMapper;
 import org.example.order_app_backend.repository.MenuItemRepository;
+import org.example.order_app_backend.repository.NotificationRepository;
 import org.example.order_app_backend.repository.OrderItemRepository;
 import org.example.order_app_backend.repository.OrderRepository;
 import org.example.order_app_backend.repository.StoreRepository;
 import org.example.order_app_backend.repository.UserRepository;
 import org.example.order_app_backend.security.CurrentUserProvider;
+import org.example.order_app_backend.service.FcmNotificationService;
 import org.example.order_app_backend.service.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +50,8 @@ public class OrderServiceImpl implements OrderService {
     private final StoreRepository storeRepository;
     private final MenuItemRepository menuItemRepository;
     private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
+    private final FcmNotificationService fcmNotificationService;
     private final OrderMapper orderMapper;
     private final CurrentUserProvider currentUserProvider;
 
@@ -368,6 +372,55 @@ public class OrderServiceImpl implements OrderService {
                 .status(savedOrder.getStatus())
                 .deliveredAt(savedOrder.getDeliveredAt())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse notifyArrival(Long orderId) {
+        log.info("Shipper thông báo đã đến điểm nhận hàng cho đơn ID: {}", orderId);
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        order.setShipperArrived(true);
+        if (order.getStatus() == OrderStatus.PREPARING || order.getStatus() == OrderStatus.READY) {
+            order.setStatus(OrderStatus.DELIVERING);
+        }
+        OrderEntity savedOrder = orderRepository.save(order);
+
+        String storeName = storeRepository.findById(savedOrder.getStoreId())
+                .map(StoreEntity::getName)
+                .orElse("Quán KTX");
+
+        try {
+            if (notificationRepository != null) {
+                notificationRepository.save(NotificationEntity.builder()
+                        .userId(savedOrder.getUserId())
+                        .title("🚚 Shipper đã tới Cổng KTX!")
+                        .body("Đơn hàng #" + savedOrder.getOrderCode() + " từ " + storeName + " đã có mặt tại " + savedOrder.getPickupLocation() + ". Vui lòng ra nhận món!")
+                        .type(NotificationType.ORDER_STATUS)
+                        .dataPayload("SHIPPER_ARRIVED:" + savedOrder.getId())
+                        .isRead(false)
+                        .build());
+            }
+        } catch (Exception e) {
+            log.warn("Không thể lưu notification cho đơn hàng {}: {}", orderId, e.getMessage());
+        }
+
+        try {
+            if (fcmNotificationService != null) {
+                fcmNotificationService.sendPushNotification(
+                        savedOrder.getUserId(),
+                        "🚚 Shipper đã tới Cổng KTX!",
+                        "Đơn hàng #" + savedOrder.getOrderCode() + " đã tới điểm hẹn. Mang mã QR / PIN ra nhận món nhé!",
+                        Map.of("orderId", String.valueOf(savedOrder.getId()), "event", "SHIPPER_ARRIVED")
+                );
+            }
+        } catch (Exception e) {
+            log.warn("Lỗi gửi FCM cho đơn hàng {}: {}", orderId, e.getMessage());
+        }
+
+        List<OrderItemEntity> items = orderItemRepository.findByOrderId(savedOrder.getId());
+        return orderMapper.toResponse(savedOrder, items, storeName);
     }
 
     private void validateOrderAccess(OrderEntity order) {

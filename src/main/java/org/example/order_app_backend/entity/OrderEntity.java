@@ -89,6 +89,10 @@ public class OrderEntity {
     @Column(name = "delivered_at")
     private Instant deliveredAt;
 
+    @Column(name = "shipper_arrived")
+    @Builder.Default
+    private Boolean shipperArrived = false;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

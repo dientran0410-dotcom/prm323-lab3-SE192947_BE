@@ -70,6 +70,7 @@ public class OrderMapper {
                 .pickupQrCode(order.getPickupQrCode())
                 .pickupPin(order.getPickupPin())
                 .note(order.getNote())
+                .shipperArrived(order.getShipperArrived() != null && order.getShipperArrived())
                 .items(itemResponses)
                 .deliveredAt(order.getDeliveredAt())
                 .createdAt(order.getCreatedAt())

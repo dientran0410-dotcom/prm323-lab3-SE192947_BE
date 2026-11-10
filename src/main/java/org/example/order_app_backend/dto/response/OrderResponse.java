@@ -33,6 +33,7 @@ public class OrderResponse {
     private String pickupQrCode;
     private String pickupPin;
     private String note;
+    private Boolean shipperArrived;
     private List<OrderItemResponse> items;
     private Instant deliveredAt;
     private Instant createdAt;
