@@ -35,31 +35,15 @@ public class OtpService {
         System.out.println("💡 GỢI Ý TEST NHANH:         App cũng chấp nhận mã mặc định '123456'");
         System.out.println("=".repeat(80) + "\n");
 
-        // Ghi ra file latest_otp.txt để các script trên VPS đọc liền tức thì
-        try {
-            String otpLog = String.format("[%s] SĐT: %s | MÃ OTP: %s | HẾT HẠN: %s%n",
-                    java.time.LocalDateTime.now(), cleanPhone, otp, expiresAt);
-            java.nio.file.Files.writeString(
-                    java.nio.file.Path.of("latest_otp.txt"),
-                    otpLog,
-                    java.nio.file.StandardOpenOption.CREATE,
-                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
-            java.nio.file.Files.writeString(
-                    java.nio.file.Path.of("otp_history.log"),
-                    otpLog,
-                    java.nio.file.StandardOpenOption.CREATE,
-                    java.nio.file.StandardOpenOption.APPEND);
-            // Thử ghi vào /tmp/latest_otp.txt nếu chạy trên Linux VPS
-            try {
-                java.nio.file.Files.writeString(
-                        java.nio.file.Path.of("/tmp/latest_otp.txt"),
-                        otpLog,
-                        java.nio.file.StandardOpenOption.CREATE,
-                        java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
-            } catch (Exception ignored) {}
-        } catch (Exception e) {
-            log.warn("Không thể ghi file latest_otp.txt: {}", e.getMessage());
-        }
+        // Ghi ra file data/latest_otp.txt để các script trên VPS đọc liền tức thì.
+        // Thư mục ./data được mount ra máy host trong docker-compose (./data:/app/data),
+        // nên script watch_otp.sh chạy ngoài container vẫn đọc được.
+        String otpLog = String.format("[%s] SĐT: %s | MÃ OTP: %s | HẾT HẠN: %s%n",
+                java.time.LocalDateTime.now(), cleanPhone, otp, expiresAt);
+        writeOtpFile(java.nio.file.Path.of("data", "latest_otp.txt"), otpLog, false);
+        writeOtpFile(java.nio.file.Path.of("data", "otp_history.log"), otpLog, true);
+        // Giữ bản ghi ở thư mục làm việc (khi chạy bằng java -jar / mvnw trực tiếp)
+        writeOtpFile(java.nio.file.Path.of("latest_otp.txt"), otpLog, false);
 
         log.info("Đã tạo mã OTP cho SĐT: {} (OTP: {})", cleanPhone, otp);
         return otp;
@@ -115,6 +99,23 @@ public class OtpService {
             return entry.otp();
         }
         return null;
+    }
+
+    private void writeOtpFile(java.nio.file.Path path, String content, boolean append) {
+        try {
+            java.nio.file.Path parent = path.toAbsolutePath().getParent();
+            if (parent != null) {
+                java.nio.file.Files.createDirectories(parent);
+            }
+            java.nio.file.Files.writeString(
+                    path,
+                    content,
+                    java.nio.file.StandardOpenOption.CREATE,
+                    append ? java.nio.file.StandardOpenOption.APPEND
+                           : java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (Exception e) {
+            log.warn("Không thể ghi file OTP {}: {}", path, e.getMessage());
+        }
     }
 
     private String normalizePhoneNumber(String phone) {

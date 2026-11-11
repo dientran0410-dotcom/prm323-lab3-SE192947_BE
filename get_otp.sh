@@ -10,7 +10,11 @@ echo "=========================================================="
 echo "🔍 Đang tra cứu mã OTP cho số: $PHONE..."
 
 # Cách 1: Đọc từ file latest_otp.txt nếu có
-if [ -f "latest_otp.txt" ]; then
+if [ -f "data/latest_otp.txt" ]; then
+    echo "📁 Dữ liệu từ file data/latest_otp.txt:"
+    cat data/latest_otp.txt
+    echo ""
+elif [ -f "latest_otp.txt" ]; then
     echo "📁 Dữ liệu từ file latest_otp.txt:"
     cat latest_otp.txt
     echo ""
