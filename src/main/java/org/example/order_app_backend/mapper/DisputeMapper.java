@@ -45,10 +45,22 @@ public class DisputeMapper {
         if (json == null || json.isBlank()) {
             return new ArrayList<>();
         }
+        String trimmed = json.trim();
+        // Nếu chuỗi không phải JSON Array (ví dụ dữ liệu seed lưu trực tiếp URL hoặc phân tách bằng dấu phẩy)
+        if (!trimmed.startsWith("[")) {
+            List<String> fallbackList = new ArrayList<>();
+            for (String part : trimmed.split(",")) {
+                String clean = part.trim();
+                if (!clean.isEmpty()) {
+                    fallbackList.add(clean);
+                }
+            }
+            return fallbackList;
+        }
         try {
-            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
+            return objectMapper.readValue(trimmed, new TypeReference<List<String>>() {});
         } catch (Exception e) {
-            log.warn("Không thể giải mã evidence images JSON: {}", json, e);
+            log.warn("Không thể giải mã evidence images JSON: {}", json);
             return new ArrayList<>();
         }
     }
